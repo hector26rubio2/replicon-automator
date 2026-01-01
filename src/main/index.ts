@@ -3,26 +3,22 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Store from 'electron-store';
-import { PlaywrightAutomation } from './services/playwright-automation';
-import { CSVService } from './services/csv-service';
-import { CredentialsService } from './services/credentials-service';
-import type { AppConfig, AccountMappings } from '../shared/types';
-import { DEFAULT_HORARIOS } from '../shared/constants';
+import { PlaywrightAutomation, CSVService, CredentialsService, trayService, notificationService, updaterService } from './services';
+import { createLogger, loadEnvConfig } from './utils';
+import type { AppConfig, AccountMappings, ConfigKey } from '@shared/types';
+import { DEFAULT_HORARIOS } from '@shared/constants';
+import { IPC } from '@shared/ipc';
 
-// Store para persistencia
-function parseBooleanEnv(value: string | undefined, fallback: boolean): boolean {
-  if (value === undefined) return fallback;
-  return value === '1' || value.toLowerCase() === 'true' || value.toLowerCase() === 'yes';
-}
+const logger = createLogger('Main');
+
+// Cargar configuración de entorno
+const envConfig = loadEnvConfig();
 
 const defaultConfigFromEnv: AppConfig = {
-  loginUrl: process.env.REPLICON_LOGIN_URL ?? 'https://newshore.okta.com/',
-  timeout: (() => {
-    const parsed = Number(process.env.REPLICON_TIMEOUT);
-    return Number.isFinite(parsed) ? parsed : 45000;
-  })(),
-  headless: parseBooleanEnv(process.env.REPLICON_HEADLESS, false),
-  autoSave: parseBooleanEnv(process.env.REPLICON_AUTOSAVE, true),
+  loginUrl: envConfig.loginUrl,
+  timeout: envConfig.timeout,
+  headless: envConfig.headless,
+  autoSave: envConfig.autoSave,
 };
 
 function loadDefaultMappings(): AccountMappings {
@@ -35,12 +31,17 @@ function loadDefaultMappings(): AccountMappings {
     ];
 
     const filePath = candidates.find((p) => fs.existsSync(p));
-    if (!filePath) return {};
+    if (!filePath) {
+      logger.warn('No se encontró default-mappings.json');
+      return {};
+    }
 
     const raw = fs.readFileSync(filePath, 'utf-8');
     const parsed = JSON.parse(raw) as unknown;
+    logger.info('Mappings cargados desde', filePath);
     return (parsed ?? {}) as AccountMappings;
-  } catch {
+  } catch (error) {
+    logger.error('Error cargando default-mappings.json', error);
     return {};
   }
 }
@@ -58,9 +59,8 @@ const store = new Store({
 let mainWindow: BrowserWindow | null = null;
 let automation: PlaywrightAutomation | null = null;
 
-const isDev = process.env.NODE_ENV === 'development';
-
 function createWindow() {
+  logger.info('Creando ventana principal...');
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -73,12 +73,12 @@ function createWindow() {
     },
     icon: path.join(__dirname, '../../assets/icon.ico'),
     titleBarStyle: 'default',
-    show: isDev,
+    show: envConfig.isDev,
     backgroundColor: '#0f172a',
   });
 
   // Cargar la aplicación
-  if (isDev) {
+  if (envConfig.isDev) {
     const devUrl = 'http://localhost:5173';
 
     mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
@@ -129,7 +129,7 @@ Error: ${errorCode} - ${errorDescription}</pre>
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
-  if (!isDev) {
+  if (!envConfig.isDev) {
     mainWindow.once('ready-to-show', () => {
       mainWindow?.show();
     });
@@ -144,10 +144,14 @@ Error: ${errorCode} - ${errorDescription}</pre>
 function setupIPCHandlers() {
   const csvService = new CSVService();
   const credentialsService = new CredentialsService();
+  const allowedConfigKeys = new Set<ConfigKey>(['horarios', 'mappings', 'config']);
 
   // Cargar CSV
-  ipcMain.handle('csv:load', async () => {
-    const result = await dialog.showOpenDialog(mainWindow!, {
+  ipcMain.handle(IPC.CSV_LOAD, async () => {
+    if (!mainWindow) {
+      return { success: false, error: 'Window not available' };
+    }
+    const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       filters: [{ name: 'CSV Files', extensions: ['csv'] }],
     });
@@ -160,8 +164,11 @@ function setupIPCHandlers() {
   });
 
   // Guardar CSV
-  ipcMain.handle('csv:save', async (_, data) => {
-    const result = await dialog.showSaveDialog(mainWindow!, {
+  ipcMain.handle(IPC.CSV_SAVE, async (_, data) => {
+    if (!mainWindow) {
+      return { success: false, error: 'Window not available' };
+    }
+    const result = await dialog.showSaveDialog(mainWindow, {
       filters: [{ name: 'CSV Files', extensions: ['csv'] }],
       defaultPath: 'replicon_data.csv',
     });
@@ -174,30 +181,36 @@ function setupIPCHandlers() {
   });
 
   // Credenciales
-  ipcMain.handle('credentials:save', async (_, credentials) => {
+  ipcMain.handle(IPC.CREDENTIALS_SAVE, async (_, credentials) => {
     return credentialsService.saveCredentials(credentials);
   });
 
-  ipcMain.handle('credentials:load', async () => {
+  ipcMain.handle(IPC.CREDENTIALS_LOAD, async () => {
     return credentialsService.loadCredentials();
   });
 
-  ipcMain.handle('credentials:clear', async () => {
+  ipcMain.handle(IPC.CREDENTIALS_CLEAR, async () => {
     return credentialsService.clearCredentials();
   });
 
   // Config
-  ipcMain.handle('config:get', async (_, key) => {
-    return store.get(key);
+  ipcMain.handle(IPC.CONFIG_GET, async (_, key) => {
+    if (!allowedConfigKeys.has(key as ConfigKey)) {
+      return null;
+    }
+    return store.get(key as ConfigKey);
   });
 
-  ipcMain.handle('config:set', async (_, key, value) => {
-    store.set(key, value);
+  ipcMain.handle(IPC.CONFIG_SET, async (_, key, value) => {
+    if (!allowedConfigKeys.has(key as ConfigKey)) {
+      return false;
+    }
+    store.set(key as ConfigKey, value);
     return true;
   });
 
   // Automatización
-  ipcMain.handle('automation:start', async (_, request) => {
+  ipcMain.handle(IPC.AUTOMATION_START, async (_, request) => {
     if (automation) {
       return { success: false, error: 'Ya hay una automatización en ejecución' };
     }
@@ -205,37 +218,63 @@ function setupIPCHandlers() {
     automation = new PlaywrightAutomation(
       request.config,
       (progress) => {
-        mainWindow?.webContents.send('automation:progress', progress);
+        mainWindow?.webContents.send(IPC.AUTOMATION_PROGRESS, progress);
       },
       (log) => {
-        mainWindow?.webContents.send('automation:log', log);
+        mainWindow?.webContents.send(IPC.AUTOMATION_LOG, log);
       }
     );
 
+    // Update tray status
+    trayService.setStatus('running');
+
     try {
       await automation.start(request.credentials, request.csvData, request.horarios, request.mappings);
-      mainWindow?.webContents.send('automation:complete', { success: true });
+      mainWindow?.webContents.send(IPC.AUTOMATION_COMPLETE, { success: true });
+      trayService.setStatus('completed');
+      trayService.showNotification('Automation Completed', 'The automation process has finished successfully.');
       return { success: true };
     } catch (error) {
-      mainWindow?.webContents.send('automation:error', { error: String(error) });
+      mainWindow?.webContents.send(IPC.AUTOMATION_ERROR, { error: String(error) });
+      trayService.setStatus('error');
+      trayService.showNotification('Automation Error', String(error));
       return { success: false, error: String(error) };
     } finally {
       automation = null;
     }
   });
 
-  ipcMain.handle('automation:stop', async () => {
+  ipcMain.handle(IPC.AUTOMATION_STOP, async () => {
     if (automation) {
       await automation.stop();
       automation = null;
+      trayService.setStatus('idle');
     }
     return { success: true };
   });
 
-  ipcMain.handle('automation:pause', async () => {
+  ipcMain.handle(IPC.AUTOMATION_PAUSE, async () => {
     if (automation) {
       automation.togglePause();
     }
+    return { success: true };
+  });
+
+  ipcMain.handle('check-for-updates', async () => {
+    try {
+      const result = await updaterService.checkForUpdates(false);
+      return { success: true, ...result };
+    } catch {
+      return { success: false, updateAvailable: false, version: updaterService.getCurrentVersion() };
+    }
+  });
+
+  ipcMain.handle('get-app-version', () => {
+    return updaterService.getCurrentVersion();
+  });
+
+  ipcMain.handle('install-update', () => {
+    updaterService.installUpdate();
     return { success: true };
   });
 }
@@ -244,6 +283,12 @@ function setupIPCHandlers() {
 app.whenReady().then(() => {
   createWindow();
   setupIPCHandlers();
+  
+  // Initialize system tray
+  if (mainWindow) {
+    trayService.initialize(mainWindow);
+    updaterService.initialize(mainWindow);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

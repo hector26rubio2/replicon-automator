@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { TimeSlot, AccountMappings, AppConfig } from '../../shared/types';
-import { DEFAULT_HORARIOS, DEFAULT_CONFIG } from '../../shared/constants';
+import type { TimeSlot, AccountMappings, AppConfig } from '@shared/types';
+import { DEFAULT_HORARIOS, DEFAULT_CONFIG } from '@shared/constants';
 
 export function useConfig() {
   const [horarios, setHorariosState] = useState<TimeSlot[]>(DEFAULT_HORARIOS);

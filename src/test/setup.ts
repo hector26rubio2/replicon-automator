@@ -1,0 +1,54 @@
+/**
+ * Test Setup - Configuración global para Vitest
+ */
+
+import { vi } from 'vitest';
+import '@testing-library/jest-dom';
+
+// Mock para electron en tests del renderer
+vi.mock('electron', () => ({
+  contextBridge: {
+    exposeInMainWorld: vi.fn(),
+  },
+  ipcRenderer: {
+    invoke: vi.fn(),
+    on: vi.fn(),
+    removeListener: vi.fn(),
+  },
+}));
+
+// Mock para window.electronAPI
+Object.defineProperty(window, 'electronAPI', {
+  value: {
+    loadCSV: vi.fn(),
+    saveCSV: vi.fn(),
+    saveCredentials: vi.fn(),
+    loadCredentials: vi.fn(),
+    clearCredentials: vi.fn(),
+    getConfig: vi.fn(),
+    setConfig: vi.fn(),
+    startAutomation: vi.fn(),
+    stopAutomation: vi.fn(),
+    pauseAutomation: vi.fn(),
+    onAutomationProgress: vi.fn(() => () => {}),
+    onAutomationLog: vi.fn(() => () => {}),
+    onAutomationComplete: vi.fn(() => () => {}),
+    onAutomationError: vi.fn(() => () => {}),
+  },
+  writable: true,
+});
+
+// Mock matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});

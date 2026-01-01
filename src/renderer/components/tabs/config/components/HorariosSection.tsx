@@ -1,0 +1,103 @@
+import { memo } from 'react';
+import type { TimeSlot } from '@shared/types';
+import { useTranslation } from '@/i18n';
+
+export interface HorariosSectionProps {
+  horarios: TimeSlot[];
+  onAddHorario: () => void;
+  onRemoveHorario: (id: string) => void;
+  onUpdateHorario: (id: string, field: 'start_time' | 'end_time', value: string) => void;
+}
+
+const HorariosSection = memo(function HorariosSection({
+  horarios,
+  onAddHorario,
+  onRemoveHorario,
+  onUpdateHorario,
+}: HorariosSectionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="card" role="region" aria-labelledby="horarios-title">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 id="horarios-title" className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <span className="text-2xl">⏰</span>
+          {t('configExt.workSchedules')}
+        </h2>
+        <button
+          onClick={onAddHorario}
+          className="btn btn-success text-sm"
+          aria-label={t('configExt.addSchedule')}
+        >
+          + {t('configExt.addSchedule')}
+        </button>
+      </div>
+
+      <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
+        {t('configExt.scheduleDescription')}
+      </p>
+
+      {/* Horarios list */}
+      <div className="space-y-3" role="list" aria-label={t('configExt.workSchedules')}>
+        {horarios.map((horario, index) => (
+          <div
+            key={horario.id}
+            className="flex items-center gap-4 p-3 bg-gray-100 dark:bg-dark-200 rounded-lg"
+            role="listitem"
+          >
+            <span className="text-gray-400 dark:text-slate-500 w-8">#{index + 1}</span>
+
+            <div className="flex items-center gap-2">
+              <label htmlFor={`start-${horario.id}`} className="text-gray-500 dark:text-slate-400 text-sm">
+                {t('configExt.start')}:
+              </label>
+              <input
+                id={`start-${horario.id}`}
+                type="text"
+                value={horario.start_time}
+                onChange={(e) => onUpdateHorario(horario.id, 'start_time', e.target.value)}
+                placeholder="7:00am"
+                className="w-28 bg-white dark:bg-dark-300 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white"
+                aria-label={`${t('configExt.start')} ${index + 1}`}
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label htmlFor={`end-${horario.id}`} className="text-gray-500 dark:text-slate-400 text-sm">
+                {t('configExt.end')}:
+              </label>
+              <input
+                id={`end-${horario.id}`}
+                type="text"
+                value={horario.end_time}
+                onChange={(e) => onUpdateHorario(horario.id, 'end_time', e.target.value)}
+                placeholder="1:00pm"
+                className="w-28 bg-white dark:bg-dark-300 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white"
+                aria-label={`${t('configExt.end')} ${index + 1}`}
+              />
+            </div>
+
+            <div className="flex-1" />
+
+            {horarios.length > 1 && (
+              <button
+                onClick={() => onRemoveHorario(horario.id)}
+                className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                aria-label={`${t('configExt.deleteSchedule')} ${index + 1}`}
+              >
+                🗑️
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p className="text-gray-400 dark:text-slate-500 text-xs mt-4">
+        💡 {t('configExt.formatHint')}
+      </p>
+    </div>
+  );
+});
+
+export default HorariosSection;

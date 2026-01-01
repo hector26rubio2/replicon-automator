@@ -1,0 +1,117 @@
+/**
+ * Screenshot Service - Captura automática de pantalla cuando falla la automatización
+ */
+
+import { app, BrowserWindow } from 'electron';
+import { writeFile, mkdir } from 'fs/promises';
+import { existsSync } from 'fs';
+import path from 'path';
+
+const SCREENSHOTS_DIR = path.join(app.getPath('userData'), 'screenshots');
+
+/**
+ * Ensure screenshots directory exists
+ */
+async function ensureScreenshotsDir(): Promise<void> {
+  if (!existsSync(SCREENSHOTS_DIR)) {
+    await mkdir(SCREENSHOTS_DIR, { recursive: true });
+  }
+}
+
+/**
+ * Capture screenshot of the current automation browser
+ */
+export async function captureErrorScreenshot(
+  page: { screenshot: (options: { path: string; fullPage?: boolean }) => Promise<Buffer> } | null,
+  errorContext: string
+): Promise<string | null> {
+  try {
+    await ensureScreenshotsDir();
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const sanitizedContext = errorContext.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50);
+    const filename = `error-${timestamp}-${sanitizedContext}.png`;
+    const filepath = path.join(SCREENSHOTS_DIR, filename);
+
+    if (page) {
+      await page.screenshot({ path: filepath, fullPage: true });
+      console.log(`[Screenshot] Captured: ${filepath}`);
+      return filepath;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[Screenshot] Failed to capture:', error);
+    return null;
+  }
+}
+
+/**
+ * Capture screenshot of the Electron window
+ */
+export async function captureWindowScreenshot(
+  window: BrowserWindow | null,
+  context: string
+): Promise<string | null> {
+  try {
+    if (!window) return null;
+
+    await ensureScreenshotsDir();
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const sanitizedContext = context.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50);
+    const filename = `window-${timestamp}-${sanitizedContext}.png`;
+    const filepath = path.join(SCREENSHOTS_DIR, filename);
+
+    const image = await window.webContents.capturePage();
+    await writeFile(filepath, image.toPNG());
+    
+    console.log(`[Screenshot] Window captured: ${filepath}`);
+    return filepath;
+  } catch (error) {
+    console.error('[Screenshot] Failed to capture window:', error);
+    return null;
+  }
+}
+
+/**
+ * Get screenshots directory path
+ */
+export function getScreenshotsDir(): string {
+  return SCREENSHOTS_DIR;
+}
+
+/**
+ * Clean old screenshots (keep last N)
+ */
+export async function cleanOldScreenshots(keepCount: number = 20): Promise<void> {
+  try {
+    const { readdir, unlink, stat } = await import('fs/promises');
+    
+    if (!existsSync(SCREENSHOTS_DIR)) return;
+
+    const files = await readdir(SCREENSHOTS_DIR);
+    const screenshots = await Promise.all(
+      files
+        .filter((f) => f.endsWith('.png'))
+        .map(async (f) => {
+          const filePath = path.join(SCREENSHOTS_DIR, f);
+          const stats = await stat(filePath);
+          return { path: filePath, mtime: stats.mtime.getTime() };
+        })
+    );
+
+    // Sort by modification time, newest first
+    screenshots.sort((a, b) => b.mtime - a.mtime);
+
+    // Delete old screenshots
+    const toDelete = screenshots.slice(keepCount);
+    await Promise.all(toDelete.map((s) => unlink(s.path)));
+    
+    if (toDelete.length > 0) {
+      console.log(`[Screenshot] Cleaned ${toDelete.length} old screenshots`);
+    }
+  } catch (error) {
+    console.error('[Screenshot] Failed to clean old screenshots:', error);
+  }
+}

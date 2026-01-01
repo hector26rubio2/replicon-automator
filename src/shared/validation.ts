@@ -1,0 +1,97 @@
+/**
+ * Esquemas de validación con Zod
+ * Validación type-safe para todos los inputs
+ */
+
+import { z } from 'zod';
+
+// ============================================================================
+// Schemas básicos
+// ============================================================================
+
+export const CSVRowSchema = z.object({
+  cuenta: z.string().min(1, 'Cuenta es requerida'),
+  proyecto: z.string().min(1, 'Proyecto es requerido'),
+  extras: z.string().optional().default(''),
+});
+
+export const CredentialsSchema = z.object({
+  username: z.string().min(1, 'Usuario es requerido').email('Email inválido'),
+  password: z.string().min(1, 'Contraseña es requerida'),
+});
+
+export const AutomationConfigSchema = z.object({
+  headless: z.boolean().default(true),
+  speed: z.enum(['slow', 'normal', 'fast']).default('normal'),
+  retries: z.number().int().min(0).max(5).default(3),
+  timeout: z.number().int().min(5000).max(120000).default(30000),
+});
+
+export const StartAutomationRequestSchema = z.object({
+  rows: z.array(CSVRowSchema).min(1, 'Se requiere al menos una fila'),
+  rowIndices: z.array(z.number().int().min(0)),
+  credentials: CredentialsSchema,
+  headless: z.boolean().default(true),
+});
+
+export const MappingSchema = z.object({
+  cuenta: z.string(),
+  proyecto: z.string(),
+  repliconAccount: z.string().min(1, 'Cuenta Replicon es requerida'),
+  repliconProject: z.string().min(1, 'Proyecto Replicon es requerido'),
+});
+
+// ============================================================================
+// Types inferidos
+// ============================================================================
+
+export type CSVRowInput = z.input<typeof CSVRowSchema>;
+export type CSVRowOutput = z.output<typeof CSVRowSchema>;
+export type CredentialsInput = z.input<typeof CredentialsSchema>;
+export type AutomationConfigInput = z.input<typeof AutomationConfigSchema>;
+export type StartAutomationRequestInput = z.input<typeof StartAutomationRequestSchema>;
+export type MappingInput = z.input<typeof MappingSchema>;
+
+// ============================================================================
+// Funciones de validación
+// ============================================================================
+
+export function validateCSVRow(data: unknown): { success: true; data: CSVRowOutput } | { success: false; error: string } {
+  const result = CSVRowSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, error: result.error.issues[0]?.message || 'Validación fallida' };
+}
+
+export function validateCredentials(data: unknown): { success: true; data: CredentialsInput } | { success: false; error: string } {
+  const result = CredentialsSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, error: result.error.issues[0]?.message || 'Validación fallida' };
+}
+
+export function validateStartAutomation(data: unknown): { success: true; data: StartAutomationRequestInput } | { success: false; error: string } {
+  const result = StartAutomationRequestSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, error: result.error.issues[0]?.message || 'Validación fallida' };
+}
+
+export function validateCSVRows(rows: unknown[]): { valid: CSVRowOutput[]; errors: { index: number; error: string }[] } {
+  const valid: CSVRowOutput[] = [];
+  const errors: { index: number; error: string }[] = [];
+
+  rows.forEach((row, index) => {
+    const result = CSVRowSchema.safeParse(row);
+    if (result.success) {
+      valid.push(result.data);
+    } else {
+      errors.push({ index, error: result.error.issues[0]?.message || 'Validación fallida' });
+    }
+  });
+
+  return { valid, errors };
+}

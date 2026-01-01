@@ -1,0 +1,194 @@
+/**
+ * Drag & Drop Zone Component
+ * Accepts CSV files dropped onto the application
+ */
+import React, { useState, useCallback, useRef, type ReactNode } from 'react';
+import { useTranslation } from '@/i18n';
+
+interface DropZoneProps {
+  children: ReactNode;
+  onFileDrop: (file: File) => void;
+  acceptedTypes?: string[];
+  className?: string;
+}
+
+export function DropZone({ 
+  children, 
+  onFileDrop, 
+  acceptedTypes = ['.csv', 'text/csv', 'application/vnd.ms-excel'],
+  className = ''
+}: DropZoneProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [isValidFile, setIsValidFile] = useState(true);
+  const dragCounter = useRef(0);
+  const { t } = useTranslation();
+
+  const isFileValid = useCallback((file: DataTransferItem | File) => {
+    if ('type' in file && file.type) {
+      return acceptedTypes.some(type => file.type.includes(type.replace('.', '')));
+    }
+    if ('name' in file) {
+      return acceptedTypes.some(type => file.name.toLowerCase().endsWith(type.toLowerCase()));
+    }
+    return true; // Allow if we can't determine type
+  }, [acceptedTypes]);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    
+    if (e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+      const item = e.dataTransfer.items[0];
+      setIsValidFile(isFileValid(item));
+    }
+  }, [isFileValid]);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+      setIsValidFile(true);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current = 0;
+    setIsDragging(false);
+    setIsValidFile(true);
+
+    const files = Array.from(e.dataTransfer.files);
+    const validFile = files.find(file => isFileValid(file));
+    
+    if (validFile) {
+      onFileDrop(validFile);
+    }
+  }, [onFileDrop, isFileValid]);
+
+  return (
+    <div
+      className={`relative ${className}`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {children}
+      
+      {/* Drag Overlay */}
+      {isDragging && (
+        <div 
+          className={`absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm transition-all duration-200
+                      ${isValidFile 
+                        ? 'bg-primary-500/20 border-2 border-dashed border-primary-500' 
+                        : 'bg-red-500/20 border-2 border-dashed border-red-500'
+                      }`}
+        >
+          <div className={`px-6 py-4 rounded-xl shadow-lg 
+                          ${isValidFile 
+                            ? 'bg-primary-500 text-white' 
+                            : 'bg-red-500 text-white'
+                          }`}>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{isValidFile ? '📄' : '⚠️'}</span>
+              <div>
+                <p className="font-medium">
+                  {isValidFile 
+                    ? t('csv.loadFile')
+                    : t('csv.validation.required')
+                  }
+                </p>
+                <p className="text-sm opacity-80">
+                  {isValidFile 
+                    ? 'CSV (.csv)'
+                    : t('common.onlyCsvFiles')
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Mini Drop Zone - Small component for targeted areas
+ */
+interface MiniDropZoneProps {
+  onFileDrop: (file: File) => void;
+  className?: string;
+}
+
+export function MiniDropZone({ onFileDrop, className = '' }: MiniDropZoneProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const { t } = useTranslation();
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const csvFile = files.find(f => f.name.toLowerCase().endsWith('.csv'));
+    
+    if (csvFile) {
+      onFileDrop(csvFile);
+    }
+  }, [onFileDrop]);
+
+  return (
+    <div
+      className={`border-2 border-dashed rounded-xl transition-all duration-200 cursor-pointer
+                  ${isDragging 
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+                    : 'border-gray-300 dark:border-slate-600 hover:border-primary-400'
+                  } ${className}`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <span className="text-4xl mb-3">{isDragging ? '📥' : '📄'}</span>
+        <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+          {isDragging ? t('csv.loadFile') + '...' : t('csv.loadFirst')}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-slate-500">
+          {t('csv.title')} (.csv)
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default DropZone;

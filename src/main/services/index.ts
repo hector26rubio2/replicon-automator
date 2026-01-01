@@ -1,0 +1,9 @@
+/**
+ * Barrel file para servicios del proceso main
+ */
+export { PlaywrightAutomation } from './automation.service';
+export { CSVService } from './csv.service';
+export { CredentialsService } from './credentials.service';
+export { TrayService, trayService } from './tray.service';
+export { notificationService } from './notification.service';
+export { updaterService } from './updater.service';

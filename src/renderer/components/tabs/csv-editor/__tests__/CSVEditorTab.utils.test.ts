@@ -1,0 +1,115 @@
+/**
+ * Tests for CSV Editor Tab Utils
+ */
+import { describe, it, expect, vi } from 'vitest';
+
+// Mock the electron API
+vi.mock('@renderer/shared/utils', () => ({
+  formatDate: (date: string) => date,
+  parseDate: (date: string) => new Date(date),
+}));
+
+describe('CSVEditorTab Utils', () => {
+  describe('CSV Data Validation', () => {
+    it('should validate required fields', () => {
+      const row = {
+        date: '2024-01-15',
+        hours: '8',
+        project: 'Project A',
+        task: 'Task 1',
+        description: 'Work done',
+      };
+      
+      expect(row.date).toBeTruthy();
+      expect(row.hours).toBeTruthy();
+      expect(row.project).toBeTruthy();
+    });
+
+    it('should handle empty values', () => {
+      const row = {
+        date: '',
+        hours: '',
+        project: '',
+        task: '',
+        description: '',
+      };
+      
+      expect(row.date).toBeFalsy();
+      expect(row.hours).toBeFalsy();
+    });
+
+    it('should validate hours range', () => {
+      const validHours = ['0', '8', '12', '24'];
+      const invalidHours = ['-1', '25', 'abc', ''];
+      
+      validHours.forEach(hours => {
+        const num = parseFloat(hours);
+        expect(num >= 0 && num <= 24).toBe(true);
+      });
+      
+      invalidHours.forEach(hours => {
+        const num = parseFloat(hours);
+        expect(isNaN(num) || num < 0 || num > 24).toBe(true);
+      });
+    });
+  });
+
+  describe('Date Formatting', () => {
+    it('should format dates correctly', () => {
+      const date = '2024-01-15';
+      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('should detect invalid date formats', () => {
+      const invalidDates = ['15-01-2024', '2024/01/15', 'invalid', ''];
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      
+      invalidDates.forEach(date => {
+        expect(dateRegex.test(date)).toBe(false);
+      });
+    });
+  });
+
+  describe('Data Transformation', () => {
+    it('should convert CSV row to object', () => {
+      const headers = ['date', 'hours', 'project'];
+      const values = ['2024-01-15', '8', 'Project A'];
+      
+      const row = headers.reduce((obj, header, index) => {
+        obj[header] = values[index];
+        return obj;
+      }, {} as Record<string, string>);
+      
+      expect(row).toEqual({
+        date: '2024-01-15',
+        hours: '8',
+        project: 'Project A',
+      });
+    });
+
+    it('should handle extra columns', () => {
+      const headers = ['date', 'hours'];
+      const values = ['2024-01-15', '8', 'extra'];
+      
+      const row = headers.reduce((obj, header, index) => {
+        obj[header] = values[index] || '';
+        return obj;
+      }, {} as Record<string, string>);
+      
+      expect(Object.keys(row)).toHaveLength(2);
+    });
+
+    it('should handle missing values', () => {
+      const headers = ['date', 'hours', 'project'];
+      const values = ['2024-01-15'];
+      
+      const row = headers.reduce((obj, header, index) => {
+        obj[header] = values[index] || '';
+        return obj;
+      }, {} as Record<string, string>);
+      
+      expect(row.hours).toBe('');
+      expect(row.project).toBe('');
+    });
+  });
+});

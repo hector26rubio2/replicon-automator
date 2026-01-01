@@ -1,10 +1,11 @@
 import type {
   AutomationProgress,
+  ConfigKey,
   Credentials,
   CSVRow,
   LogEntry,
   StartAutomationRequest,
-} from '../shared/types';
+} from '@shared/types';
 
 declare global {
   interface Window {
@@ -19,8 +20,8 @@ declare global {
       clearCredentials: () => Promise<boolean>;
 
       // Config
-      getConfig: (key: string) => Promise<unknown>;
-      setConfig: (key: string, value: unknown) => Promise<boolean>;
+      getConfig: (key: ConfigKey) => Promise<unknown>;
+      setConfig: (key: ConfigKey, value: unknown) => Promise<boolean>;
 
       // Automatización
       startAutomation: (request: StartAutomationRequest) => Promise<{ success: boolean; error?: string }>;
@@ -32,8 +33,45 @@ declare global {
       onAutomationLog: (callback: (log: LogEntry) => void) => () => void;
       onAutomationComplete: (callback: (result: { success: boolean }) => void) => () => void;
       onAutomationError: (callback: (error: { error: string }) => void) => () => void;
+
+      // Updates
+      checkForUpdates: () => Promise<{ success: boolean; updateAvailable: boolean; version: string }>;
+      getAppVersion: () => Promise<string>;
+      installUpdate: () => Promise<{ success: boolean }>;
+      onUpdateProgress: (callback: (progress: UpdateProgress) => void) => () => void;
+
+      // Scheduler
+      getScheduledTasks?: () => Promise<ScheduledTask[]>;
+      createScheduledTask?: (task: Partial<ScheduledTask>) => Promise<void>;
+      updateScheduledTask?: (id: string, task: Partial<ScheduledTask>) => Promise<void>;
+      deleteScheduledTask?: (id: string) => Promise<void>;
+      toggleScheduledTask?: (id: string) => Promise<void>;
+      runScheduledTaskNow?: (id: string) => Promise<void>;
     };
   }
+}
+
+interface UpdateProgress {
+  percent: number;
+  bytesPerSecond: number;
+  transferred: number;
+  total: number;
+}
+
+interface ScheduledTask {
+  id: string;
+  name: string;
+  enabled: boolean;
+  schedule: {
+    type: 'daily' | 'weekly' | 'monthly' | 'once';
+    time: string;
+    daysOfWeek?: number[];
+    dayOfMonth?: number;
+    date?: string;
+  };
+  accountIds: string[];
+  lastRun?: string;
+  nextRun?: string;
 }
 
 export {};

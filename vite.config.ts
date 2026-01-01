@@ -13,8 +13,14 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, 'dist/renderer'),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       input: path.resolve(__dirname, 'src/renderer/index.html'),
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+        },
+      },
     },
   },
   resolve: {

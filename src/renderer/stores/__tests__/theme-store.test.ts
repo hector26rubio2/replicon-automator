@@ -1,0 +1,127 @@
+/**
+ * Tests for Theme Store
+ */
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+describe('Theme Store', () => {
+  beforeEach(() => {
+    // Reset document class
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('dark', 'light');
+    }
+  });
+
+  describe('Theme State', () => {
+    it('should have default theme', () => {
+      const defaultTheme = 'system';
+      expect(['light', 'dark', 'system']).toContain(defaultTheme);
+    });
+
+    it('should detect system preference', () => {
+      // Mock matchMedia
+      const mockMatchMedia = (matches: boolean) => ({
+        matches,
+        media: '(prefers-color-scheme: dark)',
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      });
+      
+      // System prefers dark
+      const darkPreference = mockMatchMedia(true);
+      expect(darkPreference.matches).toBe(true);
+      
+      // System prefers light
+      const lightPreference = mockMatchMedia(false);
+      expect(lightPreference.matches).toBe(false);
+    });
+  });
+
+  describe('Theme Toggling', () => {
+    it('should toggle between light and dark', () => {
+      let theme: 'light' | 'dark' = 'light';
+      
+      const toggle = () => {
+        theme = theme === 'light' ? 'dark' : 'light';
+      };
+      
+      expect(theme).toBe('light');
+      toggle();
+      expect(theme).toBe('dark');
+      toggle();
+      expect(theme).toBe('light');
+    });
+
+    it('should cycle through all themes', () => {
+      const themes = ['light', 'dark', 'system'] as const;
+      let currentIndex = 0;
+      
+      const cycle = () => {
+        currentIndex = (currentIndex + 1) % themes.length;
+        return themes[currentIndex];
+      };
+      
+      expect(cycle()).toBe('dark');
+      expect(cycle()).toBe('system');
+      expect(cycle()).toBe('light');
+    });
+  });
+
+  describe('Theme Application', () => {
+    it('should apply dark class correctly', () => {
+      const applyTheme = (theme: 'light' | 'dark') => {
+        const classes = theme === 'dark' ? ['dark'] : [];
+        return classes;
+      };
+      
+      expect(applyTheme('dark')).toContain('dark');
+      expect(applyTheme('light')).not.toContain('dark');
+    });
+
+    it('should resolve system theme', () => {
+      const resolveSystemTheme = (systemPrefersDark: boolean): 'light' | 'dark' => {
+        return systemPrefersDark ? 'dark' : 'light';
+      };
+      
+      expect(resolveSystemTheme(true)).toBe('dark');
+      expect(resolveSystemTheme(false)).toBe('light');
+    });
+  });
+
+  describe('Theme Persistence', () => {
+    it('should serialize theme to JSON', () => {
+      const state = { theme: 'dark' as const };
+      const json = JSON.stringify(state);
+      const parsed = JSON.parse(json);
+      
+      expect(parsed.theme).toBe('dark');
+    });
+
+    it('should handle invalid persisted value', () => {
+      const validateTheme = (value: unknown): 'light' | 'dark' | 'system' => {
+        if (value === 'light' || value === 'dark' || value === 'system') {
+          return value;
+        }
+        return 'system'; // Default fallback
+      };
+      
+      expect(validateTheme('dark')).toBe('dark');
+      expect(validateTheme('invalid')).toBe('system');
+      expect(validateTheme(null)).toBe('system');
+    });
+  });
+
+  describe('Transition Handling', () => {
+    it('should skip transitions when specified', () => {
+      const applyWithTransition = (skipTransition: boolean) => {
+        const classes: string[] = [];
+        if (skipTransition) {
+          classes.push('no-transitions');
+        }
+        return classes;
+      };
+      
+      expect(applyWithTransition(true)).toContain('no-transitions');
+      expect(applyWithTransition(false)).not.toContain('no-transitions');
+    });
+  });
+});

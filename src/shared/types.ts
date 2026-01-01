@@ -79,6 +79,11 @@ export interface AppConfig {
   autoSave: boolean;
 }
 
+import type { IpcChannel } from './ipc';
+
+// Claves permitidas para persistencia en electron-store (renderer no es de confianza)
+export type ConfigKey = 'horarios' | 'mappings' | 'config';
+
 // Templates CSV predefinidos
 export interface CSVTemplate {
   id: string;
@@ -87,23 +92,8 @@ export interface CSVTemplate {
   rows: CSVRow[];
 }
 
-// IPC Events
-export type IPCChannels = 
-  | 'automation:start'
-  | 'automation:stop'
-  | 'automation:pause'
-  | 'automation:progress'
-  | 'automation:log'
-  | 'automation:complete'
-  | 'automation:error'
-  | 'csv:load'
-  | 'csv:generate'
-  | 'csv:save'
-  | 'config:get'
-  | 'config:set'
-  | 'credentials:save'
-  | 'credentials:load'
-  | 'credentials:clear';
+// IPC Events (single source of truth: `src/shared/ipc.ts`)
+export type IPCChannels = IpcChannel;
 
 // Request/Response types para IPC
 export interface StartAutomationRequest {

@@ -1,4 +1,4 @@
-import type { CSVRow, AccountMappings } from '../../../../shared/types';
+import type { CSVRow, AccountMappings } from '@shared/types';
 
 export interface CSVEditorTabProps {
   data: CSVRow[] | null;
@@ -21,4 +21,9 @@ export type ExtDraftEntry = {
   proyecto: string;
   inicio: string; // HHmm
   fin: string; // HHmm
+};
+
+export type ParseExtResult = {
+  entries: ExtDraftEntry[];
+  error: string | null;
 };

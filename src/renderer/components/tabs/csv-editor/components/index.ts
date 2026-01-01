@@ -1,0 +1,13 @@
+// CSV Editor components barrel
+export { default as ToolbarSection } from './ToolbarSection';
+export { default as DataPreview } from './DataPreview';
+export { default as DataTable } from './DataTable';
+export { default as DataTableRow } from './DataTableRow';
+export { default as ExtrasEditorModal } from './ExtrasEditorModal';
+
+// Re-export types
+export type { ToolbarSectionProps } from './ToolbarSection';
+export type { DataPreviewProps } from './DataPreview';
+export type { DataTableProps } from './DataTable';
+export type { DataTableRowProps } from './DataTableRow';
+export type { ExtrasEditorModalProps } from './ExtrasEditorModal';

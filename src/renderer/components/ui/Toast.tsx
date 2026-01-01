@@ -1,0 +1,86 @@
+import { useState, useCallback, createContext, useContext, type ReactNode } from 'react';
+
+type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+interface Toast {
+  id: string;
+  type: ToastType;
+  message: string;
+}
+
+interface ToastContextValue {
+  toasts: Toast[];
+  showToast: (type: ToastType, message: string) => void;
+  dismissToast: (id: string) => void;
+}
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+export function useToast() {
+  const ctx = useContext(ToastContext);
+  if (!ctx) throw new Error('useToast must be used within ToastProvider');
+  return ctx;
+}
+
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const showToast = useCallback((type: ToastType, message: string) => {
+    const id = Math.random().toString(36).slice(2);
+    setToasts((prev) => [...prev, { id, type, message }]);
+    
+    // Auto-dismiss after 4s
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ toasts, showToast, dismissToast }}>
+      {children}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+    </ToastContext.Provider>
+  );
+}
+
+function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
+  if (toasts.length === 0) return null;
+
+  const icons: Record<ToastType, string> = {
+    success: '✅',
+    error: '❌',
+    warning: '⚠️',
+    info: 'ℹ️',
+  };
+
+  const colors: Record<ToastType, string> = {
+    success: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-100',
+    error: 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-100',
+    warning: 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-100',
+    info: 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-100',
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+      {toasts.map((toast) => (
+        <div
+          key={toast.id}
+          className={`flex items-start gap-3 p-4 rounded-lg border backdrop-blur-sm shadow-lg animate-fade-in ${colors[toast.type]}`}
+        >
+          <span className="text-lg shrink-0">{icons[toast.type]}</span>
+          <p className="text-sm flex-1">{toast.message}</p>
+          <button
+            onClick={() => onDismiss(toast.id)}
+            className="text-current opacity-60 hover:opacity-100 transition-opacity"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}

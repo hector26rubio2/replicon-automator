@@ -1,0 +1,85 @@
+import { memo } from 'react';
+import type { AppConfig } from '@shared/types';
+import { useTranslation } from '@/i18n';
+
+export interface AppConfigSectionProps {
+  appConfig: AppConfig;
+  onAppConfigChange: (config: AppConfig) => void;
+}
+
+const AppConfigSection = memo(function AppConfigSection({
+  appConfig,
+  onAppConfigChange,
+}: AppConfigSectionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="card" role="region" aria-labelledby="app-config-title">
+      <h2 id="app-config-title" className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <span className="text-2xl">⚙️</span>
+        {t('configExt.appSettings')}
+      </h2>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Login URL */}
+        <div>
+          <label htmlFor="login-url" className="block text-sm text-gray-500 dark:text-slate-400 mb-1">
+            {t('configExt.loginUrl')}
+          </label>
+          <input
+            id="login-url"
+            type="text"
+            value={appConfig.loginUrl}
+            onChange={(e) => onAppConfigChange({ ...appConfig, loginUrl: e.target.value })}
+            className="w-full bg-white dark:bg-dark-200 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white"
+          />
+        </div>
+
+        {/* Timeout */}
+        <div>
+          <label htmlFor="timeout" className="block text-sm text-gray-500 dark:text-slate-400 mb-1">
+            {t('configExt.timeout')}
+          </label>
+          <input
+            id="timeout"
+            type="number"
+            value={appConfig.timeout}
+            onChange={(e) =>
+              onAppConfigChange({ ...appConfig, timeout: parseInt(e.target.value) || 45000 })
+            }
+            className="w-full bg-white dark:bg-dark-200 border border-gray-300 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white"
+          />
+        </div>
+
+        {/* Headless mode */}
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={appConfig.headless}
+              onChange={(e) => onAppConfigChange({ ...appConfig, headless: e.target.checked })}
+              className="w-4 h-4 rounded accent-primary-500"
+              aria-describedby="headless-description"
+            />
+            <span className="text-gray-700 dark:text-slate-300">{t('configExt.headlessMode')}</span>
+          </label>
+        </div>
+
+        {/* Auto-save */}
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={appConfig.autoSave}
+              onChange={(e) => onAppConfigChange({ ...appConfig, autoSave: e.target.checked })}
+              className="w-4 h-4 rounded accent-primary-500"
+            />
+            <span className="text-gray-700 dark:text-slate-300">{t('configExt.autoSaveConfig')}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export default AppConfigSection;

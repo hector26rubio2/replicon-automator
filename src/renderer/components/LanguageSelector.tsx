@@ -1,0 +1,70 @@
+/**
+ * Language Selector Component
+ */
+import { useTranslation, Language } from '@/i18n';
+
+const languages: { code: Language; name: string; flag: string }[] = [
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+];
+
+interface LanguageSelectorProps {
+  className?: string;
+}
+
+export function LanguageSelector({ className = '' }: LanguageSelectorProps) {
+  const { language, setLanguage } = useTranslation();
+
+  return (
+    <div className={`relative inline-block ${className}`}>
+      <select
+        value={language}
+        onChange={(e) => setLanguage(e.target.value as Language)}
+        className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
+                   rounded-lg px-3 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-200
+                   hover:border-blue-500 dark:hover:border-blue-400 focus:outline-none focus:ring-2 
+                   focus:ring-blue-500 dark:focus:ring-blue-400 cursor-pointer
+                   transition-all duration-200"
+      >
+        {languages.map((lang) => (
+          <option key={lang.code} value={lang.code}>
+            {lang.flag} {lang.name}
+          </option>
+        ))}
+      </select>
+      <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+        <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// Compact version for header
+export function LanguageSelectorCompact({ className = '' }: LanguageSelectorProps) {
+  const { language, setLanguage, t } = useTranslation();
+  
+  const currentLang = languages.find(l => l.code === language);
+  const nextLang = languages.find(l => l.code !== language);
+
+  const toggleLanguage = () => {
+    if (nextLang) {
+      setLanguage(nextLang.code);
+    }
+  };
+
+  return (
+    <button
+      onClick={toggleLanguage}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
+                  bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200
+                  hover:bg-gray-200 dark:hover:bg-gray-700
+                  transition-all duration-200 ${className}`}
+      title={`${t('common.switchTo')} ${nextLang?.name}`}
+    >
+      <span className="text-base">{currentLang?.flag}</span>
+      <span className="hidden sm:inline">{currentLang?.code.toUpperCase()}</span>
+    </button>
+  );
+}

@@ -1,6 +1,5 @@
-import Holidays from 'date-holidays';
-import type { AccountMappings, CSVRow } from '../../../../shared/types';
-import { SPECIAL_ACCOUNTS } from '../../../../shared/constants';
+import type { AccountMappings, CSVRow } from '@shared/types';
+import { SPECIAL_ACCOUNTS } from '@shared/constants';
 import type { ExtDraftEntry } from './CSVEditorTab.types';
 
 export function isSpecialAccountCode(code: string): boolean {
@@ -78,10 +77,12 @@ export function buildExtString(entries: ExtDraftEntry[]): string {
   return `EXT/${first.cuenta}:${first.proyecto}:${first.inicio}:${first.fin}${tail ? `;${tail}` : ''}`;
 }
 
-export function computeHolidaySet(year: number): Set<string> {
-  const hd = new Holidays('CO');
+export async function computeHolidaySet(year: number): Promise<Set<string>> {
   const holidaySet = new Set<string>();
   try {
+    // Lazy import - date-holidays es ~1.3MB
+    const { default: Holidays } = await import('date-holidays');
+    const hd = new Holidays('CO');
     const holidays = hd.getHolidays(year) as Array<{ date: string | Date; type?: string }>;
     for (const h of holidays) {
       if (h.type && h.type !== 'public') continue;

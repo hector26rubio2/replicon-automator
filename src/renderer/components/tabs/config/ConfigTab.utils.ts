@@ -1,5 +1,5 @@
-import type { AccountMappings } from '../../../../shared/types';
-import { SPECIAL_ACCOUNTS } from '../../../../shared/constants';
+import type { AccountMappings } from '@shared/types';
+import { SPECIAL_ACCOUNTS } from '@shared/constants';
 import { SPECIAL_ACCOUNT_SEEDS } from './ConfigTab.constants';
 
 export function isSpecialAccountCode(code: string): boolean {

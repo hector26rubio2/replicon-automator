@@ -1,0 +1,175 @@
+/**
+ * Skeleton Component - Loading placeholders
+ */
+import { memo } from 'react';
+
+interface SkeletonProps {
+  className?: string;
+  variant?: 'text' | 'circular' | 'rectangular' | 'rounded';
+  width?: string | number;
+  height?: string | number;
+  animation?: 'pulse' | 'wave' | 'none';
+}
+
+export const Skeleton = memo(function Skeleton({
+  className = '',
+  variant = 'text',
+  width,
+  height,
+  animation = 'pulse',
+}: SkeletonProps) {
+  const baseClasses = 'bg-gray-200 dark:bg-slate-700';
+  
+  const animationClasses = {
+    pulse: 'animate-pulse',
+    wave: 'animate-shimmer',
+    none: '',
+  };
+
+  const variantClasses = {
+    text: 'rounded',
+    circular: 'rounded-full',
+    rectangular: '',
+    rounded: 'rounded-lg',
+  };
+
+  const style: React.CSSProperties = {
+    width: width ?? (variant === 'text' ? '100%' : undefined),
+    height: height ?? (variant === 'text' ? '1em' : undefined),
+  };
+
+  return (
+    <div
+      className={`${baseClasses} ${animationClasses[animation]} ${variantClasses[variant]} ${className}`}
+      style={style}
+      role="status"
+      aria-label="Loading..."
+    />
+  );
+});
+
+// Pre-built skeleton components
+export const SkeletonText = memo(function SkeletonText({ 
+  lines = 3, 
+  className = '' 
+}: { 
+  lines?: number; 
+  className?: string;
+}) {
+  return (
+    <div className={`space-y-2 ${className}`} role="status" aria-label="Loading text...">
+      {Array.from({ length: lines }).map((_, i) => (
+        <Skeleton 
+          key={i} 
+          variant="text" 
+          width={i === lines - 1 ? '60%' : '100%'} 
+          height="0.875rem"
+        />
+      ))}
+    </div>
+  );
+});
+
+export const SkeletonCard = memo(function SkeletonCard({ className = '' }: { className?: string }) {
+  return (
+    <div 
+      className={`bg-white dark:bg-dark-100 rounded-xl border border-gray-200 dark:border-slate-700 p-6 ${className}`}
+      role="status"
+      aria-label="Loading card..."
+    >
+      <div className="flex items-center gap-4 mb-4">
+        <Skeleton variant="circular" width={48} height={48} />
+        <div className="flex-1 space-y-2">
+          <Skeleton variant="text" width="40%" height="1rem" />
+          <Skeleton variant="text" width="60%" height="0.75rem" />
+        </div>
+      </div>
+      <SkeletonText lines={3} />
+    </div>
+  );
+});
+
+export const SkeletonTable = memo(function SkeletonTable({ 
+  rows = 5, 
+  columns = 4,
+  className = '' 
+}: { 
+  rows?: number; 
+  columns?: number;
+  className?: string;
+}) {
+  return (
+    <div className={`space-y-3 ${className}`} role="status" aria-label="Loading table...">
+      {/* Header */}
+      <div className="flex gap-4 pb-2 border-b border-gray-200 dark:border-slate-700">
+        {Array.from({ length: columns }).map((_, i) => (
+          <Skeleton key={i} variant="text" width="100%" height="1rem" />
+        ))}
+      </div>
+      {/* Rows */}
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <div key={rowIndex} className="flex gap-4">
+          {Array.from({ length: columns }).map((_, colIndex) => (
+            <Skeleton key={colIndex} variant="text" width="100%" height="0.875rem" />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+});
+
+export const SkeletonButton = memo(function SkeletonButton({ 
+  width = 100,
+  className = '' 
+}: { 
+  width?: number | string;
+  className?: string;
+}) {
+  return (
+    <Skeleton 
+      variant="rounded" 
+      width={width} 
+      height={40} 
+      className={className}
+    />
+  );
+});
+
+export const SkeletonAvatar = memo(function SkeletonAvatar({ 
+  size = 40,
+  className = '' 
+}: { 
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <Skeleton 
+      variant="circular" 
+      width={size} 
+      height={size} 
+      className={className}
+    />
+  );
+});
+
+// Dashboard skeleton
+export const SkeletonDashboard = memo(function SkeletonDashboard() {
+  return (
+    <div className="space-y-6" role="status" aria-label="Loading dashboard...">
+      {/* Stats row */}
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="bg-white dark:bg-dark-100 rounded-xl p-4 border border-gray-200 dark:border-slate-700">
+            <Skeleton variant="text" width="50%" height="0.75rem" className="mb-2" />
+            <Skeleton variant="text" width="70%" height="1.5rem" />
+          </div>
+        ))}
+      </div>
+      {/* Main content */}
+      <div className="grid grid-cols-2 gap-6">
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    </div>
+  );
+});

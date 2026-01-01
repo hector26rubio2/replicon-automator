@@ -1,4 +1,4 @@
-import type { TimeSlot, AccountMappings, AppConfig } from '../../../../shared/types';
+import type { TimeSlot, AccountMappings, AppConfig } from '@shared/types';
 
 export interface ConfigTabProps {
   horarios: TimeSlot[];

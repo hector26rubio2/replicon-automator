@@ -1,0 +1,205 @@
+/**
+ * Animated Tab Transition Component
+ * Provides smooth transitions between tab content
+ */
+import { memo, useRef, useEffect, useState, type ReactNode } from 'react';
+
+interface AnimatedTabProps {
+  children: ReactNode;
+  activeKey: string;
+  className?: string;
+}
+
+export const AnimatedTab = memo(function AnimatedTab({
+  children,
+  activeKey,
+  className = '',
+}: AnimatedTabProps) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [currentKey, setCurrentKey] = useState(activeKey);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activeKey !== currentKey) {
+      // Use setTimeout to avoid sync setState in effect
+      const animTimer = setTimeout(() => setIsAnimating(true), 0);
+      // Start fade out, then change content, then fade in
+      const timer = setTimeout(() => {
+        setCurrentKey(activeKey);
+        setIsAnimating(false);
+      }, 150);
+      return () => {
+        clearTimeout(animTimer);
+        clearTimeout(timer);
+      };
+    }
+  }, [activeKey, currentKey]);
+
+  return (
+    <div
+      ref={contentRef}
+      className={`transition-all duration-150 ease-in-out ${className} ${
+        isAnimating 
+          ? 'opacity-0 transform translate-y-1' 
+          : 'opacity-100 transform translate-y-0'
+      }`}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Page transition wrapper for full page transitions
+interface PageTransitionProps {
+  children: ReactNode;
+  show: boolean;
+  className?: string;
+}
+
+export const PageTransition = memo(function PageTransition({
+  children,
+  show,
+  className = '',
+}: PageTransitionProps) {
+  const [shouldRender, setShouldRender] = useState(show);
+
+  useEffect(() => {
+    if (show) {
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => setShouldRender(true), 0);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => setShouldRender(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [show]);
+
+  if (!shouldRender) return null;
+
+  return (
+    <div
+      className={`transition-all duration-200 ease-out ${className} ${
+        show 
+          ? 'opacity-100 transform scale-100' 
+          : 'opacity-0 transform scale-95'
+      }`}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Slide transition for sidebar/panel animations
+interface SlideTransitionProps {
+  children: ReactNode;
+  show: boolean;
+  direction?: 'left' | 'right' | 'up' | 'down';
+  className?: string;
+}
+
+export const SlideTransition = memo(function SlideTransition({
+  children,
+  show,
+  direction = 'right',
+  className = '',
+}: SlideTransitionProps) {
+  const [shouldRender, setShouldRender] = useState(show);
+
+  useEffect(() => {
+    if (show) {
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => setShouldRender(true), 0);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [show]);
+
+  if (!shouldRender) return null;
+
+  const directionClasses = {
+    left: show ? 'translate-x-0' : '-translate-x-full',
+    right: show ? 'translate-x-0' : 'translate-x-full',
+    up: show ? 'translate-y-0' : '-translate-y-full',
+    down: show ? 'translate-y-0' : 'translate-y-full',
+  };
+
+  return (
+    <div
+      className={`transition-transform duration-300 ease-out ${className} ${
+        show ? 'opacity-100' : 'opacity-0'
+      } ${directionClasses[direction]}`}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Fade transition
+interface FadeTransitionProps {
+  children: ReactNode;
+  show: boolean;
+  duration?: number;
+  className?: string;
+}
+
+export const FadeTransition = memo(function FadeTransition({
+  children,
+  show,
+  duration = 200,
+  className = '',
+}: FadeTransitionProps) {
+  const [shouldRender, setShouldRender] = useState(show);
+
+  useEffect(() => {
+    if (show) {
+      // Use setTimeout to defer state update
+      const timer = setTimeout(() => setShouldRender(true), 0);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => setShouldRender(false), duration);
+      return () => clearTimeout(timer);
+    }
+  }, [show, duration]);
+
+  if (!shouldRender) return null;
+
+  return (
+    <div
+      className={`transition-opacity ease-in-out ${className} ${
+        show ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{ transitionDuration: `${duration}ms` }}
+    >
+      {children}
+    </div>
+  );
+});
+
+// Staggered list animation
+interface StaggeredListProps {
+  children: ReactNode[];
+  staggerDelay?: number;
+  className?: string;
+}
+
+export const StaggeredList = memo(function StaggeredList({
+  children,
+  staggerDelay = 50,
+  className = '',
+}: StaggeredListProps) {
+  return (
+    <div className={className}>
+      {children.map((child, index) => (
+        <div
+          key={index}
+          className="animate-fade-in-up"
+          style={{ animationDelay: `${index * staggerDelay}ms` }}
+        >
+          {child}
+        </div>
+      ))}
+    </div>
+  );
+});

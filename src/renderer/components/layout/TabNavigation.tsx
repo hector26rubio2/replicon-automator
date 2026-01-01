@@ -1,0 +1,41 @@
+interface Tab<T extends string = string> {
+  id: T;
+  label: string;
+  icon: string;
+}
+
+interface TabNavigationProps<T extends string = string> {
+  tabs: Tab<T>[];
+  activeTab: T;
+  onTabChange: (tabId: T) => void;
+}
+
+export default function TabNavigation<T extends string>({
+  tabs,
+  activeTab,
+  onTabChange,
+}: TabNavigationProps<T>) {
+  return (
+    <nav className="bg-gray-100 dark:bg-dark-200/50 border-b border-gray-200 dark:border-slate-700 transition-colors">
+      <div className="flex">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`
+              flex items-center gap-2 px-6 py-3 text-sm font-medium transition-all duration-200
+              border-b-2 hover:bg-gray-200 dark:hover:bg-slate-800/50
+              ${activeTab === tab.id 
+                ? 'text-primary-600 dark:text-primary-400 border-primary-500 bg-white dark:bg-slate-800/30' 
+                : 'text-gray-600 dark:text-slate-400 border-transparent hover:text-gray-900 dark:hover:text-white'
+              }
+            `}
+          >
+            <span className="text-base">{tab.icon}</span>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
