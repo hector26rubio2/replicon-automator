@@ -1,0 +1,44 @@
+{
+  "BH": { "name": "No work", "projects": {} },
+  "H": { "name": "Vacation", "projects": {} },
+  "F": { "name": "Vacation", "projects": {} },
+  "AV": {
+    "name": "Avianca",
+    "projects": {
+      "MS": "Avianca-Services-AM",
+      "PR": "Avianca-Services-Projects"
+    }
+  },
+  "JM": {
+    "name": "Jambojet",
+    "projects": {
+      "MS": "Jambojet-Services-AM",
+      "PR": "Jambojet-Services-Projects"
+    }
+  },
+  "PROD": {
+    "name": "Newshore (Product)",
+    "projects": {
+      "MS": "",
+      "PR": "",
+      "IN": "Engineering",
+      "PI": "Platform-Integrations"
+    }
+  },
+  "PU": {
+    "name": "Plus Ultra",
+    "projects": {
+      "MS": "PlusUltra- Services- AM",
+      "PR": "PlusUltra-Services-Projects",
+      "IBE": "PlusUltra-IBE-Setup"
+    }
+  },
+  "DT": {
+    "name": "TAAGAngola",
+    "projects": {
+      "MS": "TAAGAngola-Services-AM",
+      "PR": "TAAGAngola-Services-Projects"
+    }
+  },
+  "NEW": { "name": "Newshore (Interno)", "projects": {} }
+}

@@ -1,0 +1,75 @@
+{
+  "name": "replicon-automator",
+  "version": "3.0.0",
+  "description": "Automatizador de Replicon - App de escritorio moderna con Electron + Playwright",
+  "main": "dist/main/index.js",
+  "author": "Hector David Rubio Tabares",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm run build:main && cross-env NODE_NO_WARNINGS=1 concurrently -k \"npm run dev:renderer\" \"npm run dev:main-watch\" \"npm run dev:electron\"",
+    "dev:main-watch": "tsc -p tsconfig.main.json --watch --preserveWatchOutput",
+    "dev:electron": "cross-env NODE_ENV=development ELECTRON_ENABLE_LOGGING=1 ELECTRON_ENABLE_STACK_DUMPING=1 electron . --trace-warnings",
+    "dev:main": "cross-env NODE_ENV=development electron .",
+    "dev:renderer": "vite --port 5173 --strictPort",
+    "build": "npm run build:renderer && npm run build:main",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "date-holidays": "^3.26.6",
+    "dotenv": "^17.2.3",
+    "electron-store": "^8.1.0",
+    "papaparse": "^5.4.1",
+    "playwright": "^1.40.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/papaparse": "^5.3.14",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/uuid": "^9.0.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electronmon": "^2.0.4",
+    "eslint": "^8.55.0",
+    "postcss": "^8.4.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.3.6",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.3.2",
+    "vite": "^5.0.7",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.hdrt.replicon-automator",
+    "productName": "Replicon Automator",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

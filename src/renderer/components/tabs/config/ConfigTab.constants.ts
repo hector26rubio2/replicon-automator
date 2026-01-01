@@ -1,0 +1,7 @@
+export const SPECIAL_ACCOUNT_SEEDS: ReadonlyArray<{ code: string; name: string }> = [
+  { code: 'BH', name: 'No work' },
+  { code: 'H', name: 'Vacation' },
+  { code: 'F', name: 'Vacation' },
+  { code: 'ND', name: 'No work' },
+  { code: 'FDS', name: 'No work' },
+];

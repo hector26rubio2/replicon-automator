@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  min-height: 100vh;
+  color: #e2e8f0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* Glassmorphism effect */
+.glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Animation classes */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+  }
+}
+
+/* Input styling */
+input, select, textarea {
+  @apply bg-dark-200 border border-slate-600 rounded-lg px-4 py-2 text-white;
+  @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none;
+  @apply transition-all duration-200;
+}
+
+input::placeholder {
+  @apply text-slate-500;
+}
+
+/* Button base styles */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-200;
+}
+
+.btn-primary {
+  @apply bg-primary-600 hover:bg-primary-700 text-white;
+  @apply focus:ring-primary-500;
+}
+
+.btn-success {
+  @apply bg-emerald-600 hover:bg-emerald-700 text-white;
+  @apply focus:ring-emerald-500;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white;
+  @apply focus:ring-red-500;
+}
+
+.btn-warning {
+  @apply bg-amber-600 hover:bg-amber-700 text-white;
+  @apply focus:ring-amber-500;
+}
+
+.btn-secondary {
+  @apply bg-slate-700 hover:bg-slate-600 text-white;
+  @apply focus:ring-slate-500;
+}
+
+/* Card styling */
+.card {
+  @apply bg-dark-100/80 rounded-xl border border-slate-700/50 p-6;
+  @apply backdrop-blur-sm shadow-xl;
+}
+
+/* Tab styling */
+.tab {
+  @apply px-4 py-2 text-slate-400 hover:text-white transition-colors;
+  @apply border-b-2 border-transparent;
+}
+
+.tab.active {
+  @apply text-primary-400 border-primary-500;
+}
