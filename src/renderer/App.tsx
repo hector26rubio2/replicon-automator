@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import Header from './components/Header';
-import TabNavigation from './components/TabNavigation';
-import AutomationTab from './components/tabs/AutomationTab';
-import CSVEditorTab from './components/tabs/CSVEditorTab';
-import ConfigTab from './components/tabs/ConfigTab';
-import LogsTab from './components/tabs/LogsTab';
+import { Header, TabNavigation } from './components/layout';
+import AutomationTab from './components/tabs/automation/AutomationTab';
+import CSVEditorTab from './components/tabs/csv-editor/CSVEditorTab';
+import ConfigTab from './components/tabs/config/ConfigTab';
+import LogsTab from './components/tabs/logs/LogsTab';
 import { useAutomation } from './hooks/useAutomation';
 import { useCSV } from './hooks/useCSV';
 import { useConfig } from './hooks/useConfig';

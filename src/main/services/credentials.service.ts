@@ -4,7 +4,7 @@
 
 import Store from 'electron-store';
 import type { Credentials } from '@shared/types';
-import { createLogger } from '@main/utils';
+import { createLogger } from '../utils';
 
 const logger = createLogger('CredentialsService');
 

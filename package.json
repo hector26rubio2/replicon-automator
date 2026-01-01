@@ -67,7 +67,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "HectorDavidRubioTaba",
+      "owner": "hector-rubio-tabares",
       "repo": "replicon-automator"
     }
   }

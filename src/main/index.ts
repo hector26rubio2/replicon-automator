@@ -1,10 +1,9 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import Store from 'electron-store';
-import { PlaywrightAutomation } from './services/playwright-automation';
-import { CSVService } from './services/csv-service';
-import { CredentialsService } from './services/credentials-service';
+import { PlaywrightAutomation, CSVService, CredentialsService } from './services';
 import { DEFAULT_CONFIG, DEFAULT_MAPPINGS, DEFAULT_HORARIOS } from '../shared/constants';
+import type { AutomationProgress, LogEntry } from '../shared/types';
 
 // Store para persistencia
 const store = new Store({
@@ -118,10 +117,10 @@ function setupIPCHandlers() {
 
     automation = new PlaywrightAutomation(
       request.config,
-      (progress) => {
+      (progress: AutomationProgress) => {
         mainWindow?.webContents.send('automation:progress', progress);
       },
-      (log) => {
+      (log: LogEntry) => {
         mainWindow?.webContents.send('automation:log', log);
       }
     );
