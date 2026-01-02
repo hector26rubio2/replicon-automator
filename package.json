@@ -58,7 +58,7 @@
   "build": {
     "appId": "com.hdrt.replicon-automator",
     "productName": "Replicon Automator",
-    "artifactName": "${productName}.Setup.${ext}",
+    "artifactName": "Replicon.Automator.Setup.${ext}",
     "directories": {
       "output": "release"
     },
@@ -66,6 +66,8 @@
       "dist/**/*",
       "package.json"
     ],
+    "extraResources": [],
+    "electronLanguages": ["en", "es"],
     "win": {
       "target": [
         "nsis",
@@ -78,7 +80,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "portable": {
-      "artifactName": "${productName}.Portable.${ext}"
+      "artifactName": "Replicon.Automator.Portable.${ext}"
     },
     "publish": {
       "provider": "github",

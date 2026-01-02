@@ -166,8 +166,13 @@ class UpdaterService {
 
     autoUpdater.on('error', (error: Error) => {
       logger.error('Auto-updater error:', error);
+      // Resetear todos los flags para permitir reintentar
       this.isChecking = false;
+      this.isDownloading = false;
+      this.dialogShowing = false;
       this.mainWindow?.setProgressBar(-1);
+      // Notificar al renderer del error
+      this.mainWindow?.webContents.send('update-error');
     });
   }
 
@@ -175,6 +180,7 @@ class UpdaterService {
     // Si ya hay una actualización descargada, mostrar diálogo de instalación
     if (this.updateDownloaded && this.lastUpdateInfo) {
       logger.info('Update already downloaded, showing install dialog');
+      // No esperar al diálogo, solo mostrarlo
       this.showInstallDialog(this.lastUpdateInfo);
       return { 
         updateAvailable: true, 
@@ -182,7 +188,17 @@ class UpdaterService {
       };
     }
 
-    // Si ya está verificando, esperar un momento y retornar estado actual
+    // Si ya se sabe que hay actualización disponible (usuario dio "más tarde" antes)
+    if (this.updateAvailable && this.lastUpdateInfo && !this.isDownloading) {
+      logger.info('Update available from previous check, showing download dialog');
+      this.showDownloadDialog(this.lastUpdateInfo);
+      return {
+        updateAvailable: true,
+        version: this.lastUpdateInfo.version
+      };
+    }
+
+    // Si ya está verificando, retornar estado actual sin bloquear
     if (this.isChecking) {
       logger.info('Already checking for updates, returning current state');
       return { 
@@ -191,11 +207,28 @@ class UpdaterService {
       };
     }
 
+    // Si ya está descargando, retornar estado actual
+    if (this.isDownloading) {
+      logger.info('Download in progress, returning current state');
+      return {
+        updateAvailable: true,
+        version: this.lastUpdateInfo?.version || app.getVersion()
+      };
+    }
+
     try {
       this.updateAvailable = false;
       this.isChecking = true;
       
-      const result = await autoUpdater.checkForUpdates();
+      // Timeout de 30 segundos para evitar bloqueos
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Check for updates timeout')), 30000)
+      );
+      
+      const result = await Promise.race([
+        autoUpdater.checkForUpdates(),
+        timeoutPromise
+      ]);
 
       // Esperar un momento para que los eventos se procesen
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -209,6 +242,7 @@ class UpdaterService {
     } catch (error) {
       logger.error('Failed to check for updates:', error);
       this.isChecking = false;
+      this.isDownloading = false; // Reset también este flag en caso de error
       if (!silent) {
         notificationService.error(
           t('updates.checkError'),
@@ -238,6 +272,31 @@ class UpdaterService {
 
       if (result.response === 0) {
         this.installUpdate();
+      }
+    } else {
+      this.dialogShowing = false;
+    }
+  }
+
+  private async showDownloadDialog(info: UpdateInfo): Promise<void> {
+    if (this.dialogShowing) return;
+    this.dialogShowing = true;
+
+    if (this.mainWindow && this.mainWindow.isVisible()) {
+      const result = await dialog.showMessageBox(this.mainWindow, {
+        type: 'info',
+        title: t('updates.availableTitle'),
+        message: t('updates.availableMessage', { version: info.version }),
+        detail: t('updates.availableDetail', { version: info.version, currentVersion: app.getVersion() }),
+        buttons: [t('updates.download'), t('updates.later')],
+        defaultId: 0,
+        cancelId: 1,
+      });
+
+      this.dialogShowing = false;
+
+      if (result.response === 0) {
+        this.downloadUpdate();
       }
     } else {
       this.dialogShowing = false;

@@ -30,7 +30,7 @@ export function UpdateChecker() {
     });
   }, []);
 
-  // Listen for download progress
+  // Listen for download progress and errors
   useEffect(() => {
     const unsubProgress = window.electronAPI.onUpdateProgress?.((prog) => {
       setProgress(prog);
@@ -45,9 +45,20 @@ export function UpdateChecker() {
       showToast('success', t('updates.downloadComplete'));
     });
 
+    const unsubError = window.electronAPI.onUpdateError?.(() => {
+      // Resetear estado cuando hay error
+      if (state === 'downloading') {
+        setState('available');
+      } else if (state === 'checking') {
+        setState('idle');
+      }
+      setProgress(null);
+    });
+
     return () => {
       unsubProgress?.();
       unsubDownloaded?.();
+      unsubError?.();
     };
   }, [state, showToast, t]);
 

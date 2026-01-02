@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-01-02
+
+### Fixed
+- Update checker state not resetting after pressing "Later" multiple times
+- UI stuck showing "Downloading update..." when download fails
+- Flags (`isDownloading`, `dialogShowing`, `isChecking`) not resetting on error
+
+### Added
+- `showDownloadDialog()` method to re-show download dialog when update available
+- `onUpdateError` event to notify renderer of update errors
+- Event handlers in preload for `update-downloaded` and `update-error`
+
+### Improved
+- Artifact name changed to `Replicon.Automator.Setup.exe` (with dots, no spaces)
+- Reduced installer size by limiting locales to English and Spanish only
+- Better state management in UpdateChecker component
+
+### Technical
+- Added `electronLanguages: ["en", "es"]` to reduce bundle size
+- Reset all updater flags in error handler
+- Send `update-error` event to renderer on failure
+
 ## [0.0.6] - 2026-01-02
 
 ### Added
