@@ -8,6 +8,7 @@ import Store from 'electron-store';
 import { PlaywrightAutomation, CSVService } from '../services';
 import { CredentialsService } from '../services/unified-credentials.service';
 import * as automationEnhanced from '../services/automation-enhanced.service';
+import { logToFile } from '../utils/dev-logger';
 import type { CSVRow } from '../../shared/types';
 
 interface IPCControllerDeps {
@@ -93,6 +94,14 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
   ipcMain.handle('config:set', async (_, key: string, value: unknown) => {
     store.set(key, value);
     return true;
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // RENDERER LOG HANDLER (for file logging)
+  // ═══════════════════════════════════════════════════════════
+  
+  ipcMain.on('renderer:log', (_, data: { level: string; source: string; message: string }) => {
+    logToFile(data.level, `RENDERER:${data.source}`, data.message);
   });
 
   // ═══════════════════════════════════════════════════════════

@@ -120,6 +120,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('main:log', (_, log) => callback(log));
     return () => ipcRenderer.removeAllListeners('main:log');
   },
+
+  // Send renderer logs to main for file logging
+  sendLogToMain: (level: string, source: string, message: string) => {
+    ipcRenderer.send('renderer:log', { level, source, message });
+  },
 });
 
 // Tipos para TypeScript en el renderer
@@ -169,6 +174,7 @@ declare global {
       onShortcutGoToTab: (callback: (tab: number) => void) => () => void;
       onShortcutShowShortcuts: (callback: () => void) => () => void;
       onMainLog?: (callback: (log: { level: string; message: string }) => void) => () => void;
+      sendLogToMain?: (level: string, source: string, message: string) => void;
     };
   }
 }

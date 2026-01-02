@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-01-02
+
+### Improved
+- Centralized logging system with consistent format across main and renderer
+- Cleaner log format: `[timestamp] [LEVEL] [SOURCE] message`
+- ANSI color codes stripped from file logs for better readability
+- Production logs only capture ERROR and WARN levels (reduces file size)
+- Development logs capture all levels (DEBUG, INFO, WARN, ERROR)
+
+### Added
+- React ErrorBoundary with file logging - captures React crashes
+- Renderer errors sent to main process via IPC for file persistence
+- Global error handlers (`window.onerror`, `onunhandledrejection`) log to file
+- `sendLogToMain` API for renderer to send logs to main process
+
+### Fixed
+- Duplicate timestamps in log file when message already had timestamp
+- React warning "Cannot update component while rendering" in DevLogs
+- Removed console.log calls during render phase in App.tsx
+
+### Technical
+- `shouldLog(level)` function filters logs by environment
+- `logToFile()` exported for direct file logging from any module
+- ErrorBoundary now uses `electronAPI.sendLogToMain` instead of deprecated API
+
 ## [0.0.8] - 2026-01-02
 
 ### Fixed

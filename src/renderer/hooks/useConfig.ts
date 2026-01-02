@@ -3,6 +3,11 @@ import type { TimeSlot, AccountMappings, AppConfig } from '../../shared/types';
 import { DEFAULT_HORARIOS, DEFAULT_CONFIG, DEFAULT_MAPPINGS } from '../../shared/constants';
 import { getTranslation } from '../i18n';
 
+// Helper para enviar logs al main process (para archivo)
+const sendLog = (level: string, message: string) => {
+  window.electronAPI?.sendLogToMain?.(level, 'useConfig', message);
+};
+
 export function useConfig() {
   const [horarios, setHorariosState] = useState<TimeSlot[]>(DEFAULT_HORARIOS);
   const [mappings, setMappingsState] = useState<AccountMappings>(DEFAULT_MAPPINGS);
@@ -11,23 +16,30 @@ export function useConfig() {
   // Cargar configuración al inicio
   useEffect(() => {
     const loadConfig = async () => {
+      sendLog('INFO', 'Loading config...');
       try {
         const savedHorarios = await window.electronAPI.getConfig('horarios');
         if (savedHorarios) {
           setHorariosState(savedHorarios as TimeSlot[]);
+          sendLog('INFO', 'Loaded horarios');
         }
 
         const savedMappings = await window.electronAPI.getConfig('mappings');
         if (savedMappings) {
           setMappingsState(savedMappings as AccountMappings);
+          sendLog('INFO', 'Loaded mappings');
         }
 
         const savedAppConfig = await window.electronAPI.getConfig('config');
         if (savedAppConfig) {
           setAppConfigState(savedAppConfig as AppConfig);
+          sendLog('INFO', 'Loaded appConfig');
         }
+        sendLog('INFO', 'Config loaded successfully');
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
         console.error(getTranslation('errors.loadingConfig'), error);
+        sendLog('ERROR', `Failed to load config: ${errorMsg}`);
       }
     };
 
@@ -35,18 +47,39 @@ export function useConfig() {
   }, []);
 
   const setHorarios = useCallback((newHorarios: TimeSlot[]) => {
-    setHorariosState(newHorarios);
-    window.electronAPI.setConfig('horarios', newHorarios);
+    sendLog('INFO', 'Setting horarios...');
+    try {
+      setHorariosState(newHorarios);
+      window.electronAPI.setConfig('horarios', newHorarios);
+      sendLog('INFO', 'Horarios saved');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      sendLog('ERROR', `Failed to save horarios: ${errorMsg}`);
+    }
   }, []);
 
   const setMappings = useCallback((newMappings: AccountMappings) => {
-    setMappingsState(newMappings);
-    window.electronAPI.setConfig('mappings', newMappings);
+    sendLog('INFO', 'Setting mappings...');
+    try {
+      setMappingsState(newMappings);
+      window.electronAPI.setConfig('mappings', newMappings);
+      sendLog('INFO', 'Mappings saved');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      sendLog('ERROR', `Failed to save mappings: ${errorMsg}`);
+    }
   }, []);
 
   const setAppConfig = useCallback((newConfig: AppConfig) => {
-    setAppConfigState(newConfig);
-    window.electronAPI.setConfig('config', newConfig);
+    sendLog('INFO', `Setting appConfig: ${JSON.stringify(newConfig)}`);
+    try {
+      setAppConfigState(newConfig);
+      window.electronAPI.setConfig('config', newConfig);
+      sendLog('INFO', 'AppConfig saved');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      sendLog('ERROR', `Failed to save appConfig: ${errorMsg}`);
+    }
   }, []);
 
   return {

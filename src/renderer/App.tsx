@@ -102,6 +102,11 @@ export default function App() {
 
   useEffect(() => { window.electronAPI.loadCredentials().then(s => s && setCredentials(s)); }, []);
 
+  // Log tab changes (not during render to avoid setState warnings)
+  useEffect(() => {
+    window.electronAPI?.sendLogToMain?.('INFO', 'App', `Active tab: ${activeTab}`);
+  }, [activeTab]);
+
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-dark-100 transition-colors overflow-auto">
       <Header status={automation.status} progress={automation.progress}>

@@ -63,6 +63,9 @@ declare global {
 
       // Dev logs (solo en desarrollo)
       onMainLog?: (callback: (log: { level: string; message: string }) => void) => () => void;
+      
+      // Send logs to main for file logging
+      sendLogToMain?: (level: string, source: string, message: string) => void;
     };
   }
 }

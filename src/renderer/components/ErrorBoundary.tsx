@@ -45,9 +45,9 @@ export class ErrorBoundary extends Component<Props, State> {
     // Call optional error handler
     this.props.onError?.(error, errorInfo);
     
-    // Log to file logger if available
-    // @ts-expect-error - api may not exist in all environments
-    window.api?.log?.('error', `React Error: ${error.message}\n${errorInfo.componentStack}`);
+    // Log to file via IPC
+    const errorMsg = `React Error: ${error.message}\nStack: ${error.stack}\nComponent Stack: ${errorInfo.componentStack}`;
+    window.electronAPI?.sendLogToMain?.('ERROR', 'ReactErrorBoundary', errorMsg);
   }
 
   handleRetry = (): void => {

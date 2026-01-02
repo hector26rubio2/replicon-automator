@@ -46,7 +46,7 @@ class Logger {
     const timestamp = new Date().toISOString();
     const color = LOG_COLORS[level];
     const reset = LOG_COLORS.reset;
-    const levelStr = level.toUpperCase().padEnd(5);
+    const levelStr = level.toUpperCase();
     const dataStr = data !== undefined ? ` ${JSON.stringify(data)}` : '';
     
     return `${color}[${timestamp}] [${levelStr}] [${this.context}]${reset} ${message}${dataStr}`;
