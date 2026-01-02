@@ -35,10 +35,13 @@ declare global {
       onAutomationError: (callback: (error: { error: string }) => void) => () => void;
 
       // Updates
-      checkForUpdates: () => Promise<{ success: boolean; updateAvailable: boolean; version: string }>;
+      checkForUpdates: () => Promise<{ updateAvailable: boolean; version?: string }>;
       getAppVersion: () => Promise<string>;
-      installUpdate: () => Promise<{ success: boolean }>;
+      downloadUpdate: () => Promise<{ success: boolean; error?: string }>;
+      installUpdate: () => Promise<{ success: boolean; error?: string }>;
+      isUpdateDownloaded: () => Promise<boolean>;
       onUpdateProgress: (callback: (progress: UpdateProgress) => void) => () => void;
+      onUpdateDownloaded: (callback: () => void) => () => void;
 
       // Scheduler
       getScheduledTasks?: () => Promise<ScheduledTask[]>;

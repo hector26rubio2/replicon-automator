@@ -117,14 +117,22 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-installer
-          path: release
+          path: .
+      
+      - name: List downloaded files
+        run: |
+          echo "=== Downloaded files ==="
+          find . -type f -name "*.exe" -o -name "*.yml" -o -name "*.blockmap" -o -name "*.txt"
+          echo "=== Directory structure ==="
+          ls -la
+          ls -la release/ || echo "No release folder"
       
       - name: Read release notes
         id: notes
         run: |
-          if [ -f release/release_notes.txt ]; then
+          if [ -f release_notes.txt ]; then
             echo "notes<<EOF" >> $GITHUB_OUTPUT
-            cat release/release_notes.txt >> $GITHUB_OUTPUT
+            cat release_notes.txt >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "notes=Release v${{ needs.build.outputs.version }}" >> $GITHUB_OUTPUT
@@ -138,7 +146,7 @@ jobs:
           files: |
             release/*.exe
             release/*.blockmap
-            release/latest.yml
+            release/*.yml
           draft: false
           prerelease: false
         env:
