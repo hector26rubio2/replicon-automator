@@ -8,7 +8,7 @@ import LogsTab from './components/tabs/logs/LogsTab';
 import { useAutomation } from './hooks/useAutomation';
 import { useCSV } from './hooks/useCSV';
 import { useConfig } from './hooks/useConfig';
-import type { Credentials } from './shared/types';
+import type { Credentials } from '@shared/types';
 
 type TabId = 'automation' | 'csv-editor' | 'config' | 'logs';
 
@@ -40,10 +40,10 @@ export default function App() {
       <Header status={automation.status} progress={automation.progress} />
       <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 p-6 overflow-auto">
-        {activeTab === 'automation' && <AutomationTab credentials={credentials} onCredentialsChange={setCredentials} csvData={csv.data} csvFileName={csv.fileName} onLoadCSV={csv.loadCSV} onStartAutomation={handleStart} onStopAutomation={automation.stop} onPauseAutomation={automation.togglePause} status={automation.status} progress={automation.progress} isPaused={automation.isPaused} />}
+        {activeTab === 'automation' && <AutomationTab credentials={credentials} onCredentialsChange={setCredentials} csvData={csv.data} csvFileName={csv.fileName} onLoadCSV={csv.loadCSV} onStartAutomation={handleStart} onStopAutomation={automation.stop} onPauseAutomation={automation.togglePause} status={automation.status} progress={automation.progress} isPaused={automation.isPaused} logs={automation.logs} />}
         {activeTab === 'csv-editor' && <CSVEditorTab data={csv.data} onDataChange={csv.setData} onLoadCSV={csv.loadCSV} onSaveCSV={csv.saveCSV} mappings={config.mappings} />}
         {activeTab === 'config' && <ConfigTab horarios={config.horarios} onHorariosChange={config.setHorarios} mappings={config.mappings} onMappingsChange={config.setMappings} appConfig={config.appConfig} onAppConfigChange={config.setAppConfig} />}
-        {activeTab === 'logs' && <LogsTab logs={automation.logs} />}
+        {activeTab === 'logs' && <LogsTab />}
       </main>
       <footer className="p-4 text-center text-slate-500 text-sm border-t border-slate-800">Replicon Automator v3.0</footer>
     </div>
