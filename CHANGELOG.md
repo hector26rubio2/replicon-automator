@@ -6,6 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-01-01
+
+### Agregado
+- Sistema de actualizaciones automáticas con descarga en segundo plano
+- Botón de instalación de actualizaciones en la UI
+- Sistema de traducciones para el proceso main (i18n)
+
+### Mejorado
+- Mensajes de actualización ahora usan el sistema de traducciones
+- Mejor feedback visual durante la descarga de actualizaciones
+
 ## [0.0.1] - 2026-01-01
 
 ### Agregado
