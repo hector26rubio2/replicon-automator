@@ -6,6 +6,23 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-01-01
+
+### Agregado
+- Modal de bienvenida/guía para nuevos usuarios (Onboarding)
+- Guía paso a paso que explica las funciones principales
+- Indicadores de progreso visuales en el onboarding
+
+### Mejorado
+- Mejor experiencia de usuario para primeros usos
+- Traducciones completas del onboarding (ES/EN)
+
+## [0.0.3] - 2026-01-01
+
+### Corregido
+- Tipos TypeScript faltantes para APIs de actualización
+- Rutas de artifacts en CI/CD pipeline
+
 ## [0.0.2] - 2026-01-01
 
 ### Agregado

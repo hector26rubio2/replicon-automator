@@ -113,6 +113,38 @@ export const translations = {
       version: 'v{{version}}',
     },
 
+    // Onboarding
+    onboarding: {
+      skip: 'Skip',
+      prev: 'Previous',
+      next: 'Next',
+      start: 'Get Started',
+      welcome: {
+        title: 'Welcome to Replicon Automator!',
+        description: 'This application helps you automate your time entries in Replicon. Follow this quick guide to learn how to use it.',
+      },
+      csv: {
+        title: 'Load Your Data',
+        description: 'Start by loading a CSV file with your time entries. You can drag and drop a file or use the file picker. The CSV should contain columns for employee, project, date, and hours.',
+      },
+      credentials: {
+        title: 'Enter Your Credentials',
+        description: 'Enter your Replicon credentials in the Automation tab. Your password is stored securely using system encryption. Check "Remember me" to save your credentials.',
+      },
+      mappings: {
+        title: 'Configure Mappings',
+        description: 'In the Config tab, set up the field mappings between your CSV columns and Replicon fields. This ensures your data is entered correctly.',
+      },
+      automation: {
+        title: 'Run Automation',
+        description: 'Once configured, click "Start Automation" to begin. The app will open a browser and automatically fill in your time entries. You can pause or stop at any time.',
+      },
+      scheduler: {
+        title: 'Schedule Tasks',
+        description: 'Use the Scheduler to run automations automatically at specific times. Perfect for weekly time entry submissions!',
+      },
+    },
+
     // Shortcuts
     shortcuts: {
       title: 'Keyboard Shortcuts',
@@ -369,36 +401,6 @@ export const translations = {
       confirmReset: 'Are you sure you want to reset to defaults?',
       unsavedChanges: 'You have unsaved changes. Are you sure you want to leave?',
       confirmStop: 'Are you sure you want to stop the automation?',
-    },
-
-    // Onboarding
-    onboarding: {
-      welcome: {
-        title: 'Welcome to Replicon Automator!',
-        description: 'Let\'s take a quick tour of the application.',
-      },
-      step1: {
-        title: 'Configure Accounts',
-        description: 'First, add your Replicon accounts in the Configuration tab.',
-      },
-      step2: {
-        title: 'Prepare Data',
-        description: 'Use the CSV Editor to prepare your time entry data.',
-      },
-      step3: {
-        title: 'Run Automation',
-        description: 'Go to the Automation tab to start the process.',
-      },
-      finish: {
-        title: 'You\'re Ready!',
-        description: 'You can now start automating your time entries.',
-      },
-      buttons: {
-        next: 'Next',
-        previous: 'Previous',
-        skip: 'Skip Tour',
-        finish: 'Get Started',
-      },
     },
 
     // Error Boundary
@@ -670,6 +672,38 @@ export const translations = {
       version: 'v{{version}}',
     },
 
+    // Onboarding
+    onboarding: {
+      skip: 'Omitir',
+      prev: 'Anterior',
+      next: 'Siguiente',
+      start: 'Comenzar',
+      welcome: {
+        title: '¡Bienvenido a Replicon Automator!',
+        description: 'Esta aplicación te ayuda a automatizar tus registros de tiempo en Replicon. Sigue esta guía rápida para aprender a usarla.',
+      },
+      csv: {
+        title: 'Carga tus Datos',
+        description: 'Comienza cargando un archivo CSV con tus registros de tiempo. Puedes arrastrar y soltar un archivo o usar el selector. El CSV debe contener columnas para empleado, proyecto, fecha y horas.',
+      },
+      credentials: {
+        title: 'Ingresa tus Credenciales',
+        description: 'Ingresa tus credenciales de Replicon en la pestaña Automatización. Tu contraseña se almacena de forma segura usando encriptación del sistema. Marca "Recordarme" para guardar tus credenciales.',
+      },
+      mappings: {
+        title: 'Configura los Mapeos',
+        description: 'En la pestaña Config, configura los mapeos de campos entre las columnas de tu CSV y los campos de Replicon. Esto asegura que tus datos se ingresen correctamente.',
+      },
+      automation: {
+        title: 'Ejecuta la Automatización',
+        description: 'Una vez configurado, haz clic en "Iniciar Automatización" para comenzar. La app abrirá un navegador y llenará automáticamente tus registros de tiempo. Puedes pausar o detener en cualquier momento.',
+      },
+      scheduler: {
+        title: 'Programa Tareas',
+        description: '¡Usa el Programador para ejecutar automatizaciones automáticamente en horarios específicos. Perfecto para envíos semanales de tiempo!',
+      },
+    },
+
     // Notificaciones
     notifications: {
       automationStarted: 'Automatización Iniciada',
@@ -937,36 +971,6 @@ export const translations = {
       confirmReset: '¿Estás seguro de que deseas restablecer a valores predeterminados?',
       unsavedChanges: 'Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?',
       confirmStop: '¿Estás seguro de que deseas detener la automatización?',
-    },
-
-    // Onboarding
-    onboarding: {
-      welcome: {
-        title: '¡Bienvenido a Replicon Automator!',
-        description: 'Vamos a hacer un recorrido rápido por la aplicación.',
-      },
-      step1: {
-        title: 'Configurar Cuentas',
-        description: 'Primero, agrega tus cuentas de Replicon en la pestaña de Configuración.',
-      },
-      step2: {
-        title: 'Preparar Datos',
-        description: 'Usa el Editor CSV para preparar tus datos de registro de tiempo.',
-      },
-      step3: {
-        title: 'Ejecutar Automatización',
-        description: 'Ve a la pestaña de Automatización para iniciar el proceso.',
-      },
-      finish: {
-        title: '¡Estás Listo!',
-        description: 'Ahora puedes comenzar a automatizar tus registros de tiempo.',
-      },
-      buttons: {
-        next: 'Siguiente',
-        previous: 'Anterior',
-        skip: 'Saltar Tour',
-        finish: 'Comenzar',
-      },
     },
 
     // Error Boundary
