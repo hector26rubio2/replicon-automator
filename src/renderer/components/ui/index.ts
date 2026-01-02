@@ -5,6 +5,15 @@
 export { ToastProvider, useToast } from './Toast';
 export { ErrorBoundary } from './ErrorBoundary';
 
+// Charts
+export {
+  BarChart,
+  DonutChart,
+  LineChart,
+  Sparkline,
+  ProgressRing,
+} from './Charts';
+
 // Skeleton Loaders
 export {
   Skeleton,

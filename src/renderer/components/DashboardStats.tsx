@@ -1,10 +1,11 @@
 /**
- * Dashboard Stats Component - Estadísticas de automatizaciones
+ * Dashboard Stats Component - Estadísticas de automatizaciones con gráficos
  */
 
 import { useMemo } from 'react';
 import { useExecutionHistoryStore, type ExecutionStats } from '../stores/execution-history-store';
 import { useTranslation } from '@/i18n';
+import { BarChart, DonutChart, LineChart, ProgressRing, Sparkline } from './ui/Charts';
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
@@ -57,6 +58,60 @@ export function DashboardStats() {
 
   const successRateColor = stats.successRate >= 80 ? 'success' : stats.successRate >= 50 ? 'warning' : 'error';
 
+  // Prepare chart data
+  const monthlyData = useMemo(() => {
+    const months = new Map<string, { success: number; error: number; partial: number }>();
+    const last6Months: string[] = [];
+    
+    // Generate last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      last6Months.push(key);
+      months.set(key, { success: 0, error: 0, partial: 0 });
+    }
+
+    // Count executions per month
+    history.forEach((record) => {
+      const date = new Date(record.timestamp);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const data = months.get(key);
+      if (data) {
+        if (record.status === 'success') data.success++;
+        else if (record.status === 'error') data.error++;
+        else data.partial++;
+      }
+    });
+
+    return last6Months.map((key) => ({
+      label: key.split('-')[1],
+      ...months.get(key)!,
+    }));
+  }, [history]);
+
+  const statusDonutData = useMemo(() => {
+    const success = history.filter(h => h.status === 'success').length;
+    const error = history.filter(h => h.status === 'error').length;
+    const partial = history.filter(h => h.status === 'partial').length;
+    return [
+      { label: t('automation.status.completed'), value: success, color: '#22C55E' },
+      { label: t('automation.status.error'), value: error, color: '#EF4444' },
+      { label: 'Parcial', value: partial, color: '#F59E0B' },
+    ];
+  }, [history, t]);
+
+  const durationTrend = useMemo(() => {
+    return history.slice(0, 10).reverse().map((h, i) => ({
+      label: `#${i + 1}`,
+      value: Math.round(h.duration / 1000),
+    }));
+  }, [history]);
+
+  const sparklineData = useMemo(() => {
+    return history.slice(0, 10).reverse().map(h => h.rowsProcessed);
+  }, [history]);
+
   return (
     <div className="card h-full flex flex-col pb-8">
       <div className="flex items-center justify-between mb-4">
@@ -108,6 +163,69 @@ export function DashboardStats() {
               value={stats.totalRowsProcessed}
             />
           </div>
+
+          {/* Charts Section */}
+          {history.length > 2 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Success Rate Ring */}
+              <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">
+                  {t('dashboard.stats.successRate')}
+                </h3>
+                <div className="flex items-center justify-center">
+                  <ProgressRing
+                    progress={stats.successRate}
+                    size={100}
+                    strokeWidth={10}
+                    color={stats.successRate >= 80 ? '#22C55E' : stats.successRate >= 50 ? '#F59E0B' : '#EF4444'}
+                  >
+                    <span className="text-xl font-bold text-gray-700 dark:text-gray-200">
+                      {stats.successRate.toFixed(0)}%
+                    </span>
+                  </ProgressRing>
+                </div>
+              </div>
+
+              {/* Status Distribution */}
+              <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">
+                  {t('dashboard.charts.statusDistribution')}
+                </h3>
+                <DonutChart data={statusDonutData} size={80} thickness={16} />
+              </div>
+
+              {/* Monthly Trend */}
+              <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4 md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3">
+                  {t('dashboard.charts.monthlyTrend')}
+                </h3>
+                <BarChart
+                  data={monthlyData.map(m => ({
+                    label: m.label,
+                    value: m.success + m.error + m.partial,
+                    color: m.error > m.success ? '#EF4444' : '#3B82F6',
+                  }))}
+                  height={100}
+                />
+              </div>
+
+              {/* Duration Trend */}
+              {durationTrend.length > 2 && (
+                <div className="bg-gray-50 dark:bg-dark-200 rounded-lg p-4 md:col-span-2">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                    {t('dashboard.charts.durationTrend')}
+                    <Sparkline data={sparklineData} color="#3B82F6" />
+                  </h3>
+                  <LineChart
+                    data={durationTrend}
+                    height={80}
+                    color="#8B5CF6"
+                    showArea
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Last execution */}
           {stats.lastExecution && (

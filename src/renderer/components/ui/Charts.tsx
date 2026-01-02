@@ -1,0 +1,347 @@
+/**
+ * Chart Components - Gráficos SVG puros para el Dashboard
+ * No dependencies externas - SVG nativo
+ */
+
+import { memo, useMemo } from 'react';
+
+interface DataPoint {
+  label: string;
+  value: number;
+  color?: string;
+}
+
+// ==================== BAR CHART ====================
+interface BarChartProps {
+  data: DataPoint[];
+  height?: number;
+  showValues?: boolean;
+  className?: string;
+}
+
+export const BarChart = memo(function BarChart({
+  data,
+  height = 120,
+  showValues = true,
+  className = '',
+}: BarChartProps) {
+  const maxValue = useMemo(() => Math.max(...data.map(d => d.value), 1), [data]);
+  const barWidth = 100 / data.length;
+  const padding = 2;
+
+  return (
+    <div className={`w-full ${className}`}>
+      <svg width="100%" height={height} className="overflow-visible">
+        {data.map((point, index) => {
+          const barHeight = (point.value / maxValue) * (height - 20);
+          const x = index * barWidth + padding;
+          const y = height - barHeight - 16;
+          const color = point.color || 'currentColor';
+
+          return (
+            <g key={point.label}>
+              {/* Bar */}
+              <rect
+                x={`${x}%`}
+                y={y}
+                width={`${barWidth - padding * 2}%`}
+                height={barHeight}
+                fill={color}
+                rx={4}
+                className="transition-all duration-300 hover:opacity-80"
+              />
+              {/* Value */}
+              {showValues && point.value > 0 && (
+                <text
+                  x={`${x + (barWidth - padding * 2) / 2}%`}
+                  y={y - 4}
+                  textAnchor="middle"
+                  className="text-[10px] fill-gray-600 dark:fill-gray-400"
+                >
+                  {point.value}
+                </text>
+              )}
+              {/* Label */}
+              <text
+                x={`${x + (barWidth - padding * 2) / 2}%`}
+                y={height - 2}
+                textAnchor="middle"
+                className="text-[10px] fill-gray-500 dark:fill-gray-400"
+              >
+                {point.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+});
+
+// ==================== DONUT CHART ====================
+interface DonutChartProps {
+  data: DataPoint[];
+  size?: number;
+  thickness?: number;
+  className?: string;
+}
+
+export const DonutChart = memo(function DonutChart({
+  data,
+  size = 100,
+  thickness = 20,
+  className = '',
+}: DonutChartProps) {
+  const total = useMemo(() => data.reduce((sum, d) => sum + d.value, 0), [data]);
+  const radius = (size - thickness) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const center = size / 2;
+
+  let accumulatedOffset = 0;
+
+  return (
+    <div className={`inline-flex items-center gap-4 ${className}`}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        {/* Background circle */}
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={thickness}
+          className="text-gray-200 dark:text-gray-700"
+        />
+        {/* Data segments */}
+        {data.map((point) => {
+          const percentage = total > 0 ? point.value / total : 0;
+          const strokeLength = circumference * percentage;
+          const offset = accumulatedOffset;
+          accumulatedOffset += strokeLength;
+
+          if (point.value === 0) return null;
+
+          return (
+            <circle
+              key={point.label}
+              cx={center}
+              cy={center}
+              r={radius}
+              fill="none"
+              stroke={point.color || 'currentColor'}
+              strokeWidth={thickness}
+              strokeDasharray={`${strokeLength} ${circumference - strokeLength}`}
+              strokeDashoffset={-offset}
+              className="transition-all duration-500"
+            />
+          );
+        })}
+        {/* Center text */}
+        <text
+          x={center}
+          y={center}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="text-lg font-bold fill-gray-700 dark:fill-gray-200 transform rotate-90"
+          style={{ transformOrigin: 'center' }}
+        >
+          {total}
+        </text>
+      </svg>
+      {/* Legend */}
+      <div className="flex flex-col gap-1">
+        {data.map((point) => (
+          <div key={point.label} className="flex items-center gap-2 text-xs">
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: point.color }}
+            />
+            <span className="text-gray-600 dark:text-gray-400">
+              {point.label}: {point.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ==================== LINE CHART ====================
+interface LineChartProps {
+  data: DataPoint[];
+  height?: number;
+  color?: string;
+  showDots?: boolean;
+  showArea?: boolean;
+  className?: string;
+}
+
+export const LineChart = memo(function LineChart({
+  data,
+  height = 100,
+  color = '#3B82F6',
+  showDots = true,
+  showArea = true,
+  className = '',
+}: LineChartProps) {
+  const maxValue = useMemo(() => Math.max(...data.map(d => d.value), 1), [data]);
+  const minValue = useMemo(() => Math.min(...data.map(d => d.value), 0), [data]);
+  const range = maxValue - minValue || 1;
+
+  const points = useMemo(() => {
+    return data.map((point, index) => {
+      const x = (index / (data.length - 1 || 1)) * 100;
+      const y = height - 16 - ((point.value - minValue) / range) * (height - 32);
+      return { x, y, ...point };
+    });
+  }, [data, height, minValue, range]);
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPath = `${linePath} L ${100} ${height - 16} L ${0} ${height - 16} Z`;
+
+  return (
+    <div className={`w-full ${className}`}>
+      <svg width="100%" height={height} viewBox={`0 0 100 ${height}`} preserveAspectRatio="none">
+        {/* Area fill */}
+        {showArea && (
+          <path
+            d={areaPath}
+            fill={color}
+            fillOpacity={0.1}
+            className="transition-all duration-300"
+          />
+        )}
+        {/* Line */}
+        <path
+          d={linePath}
+          fill="none"
+          stroke={color}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+          className="transition-all duration-300"
+        />
+        {/* Dots */}
+        {showDots && points.map((point, index) => (
+          <g key={index}>
+            <circle
+              cx={point.x}
+              cy={point.y}
+              r={3}
+              fill={color}
+              className="transition-all duration-300"
+              vectorEffect="non-scaling-stroke"
+            />
+            {/* Tooltip area */}
+            <title>{`${point.label}: ${point.value}`}</title>
+          </g>
+        ))}
+      </svg>
+      {/* X-axis labels */}
+      <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+        {points.filter((_, i) => i % Math.ceil(points.length / 6) === 0 || i === points.length - 1).map((point, i) => (
+          <span key={i}>{point.label}</span>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ==================== SPARKLINE ====================
+interface SparklineProps {
+  data: number[];
+  width?: number;
+  height?: number;
+  color?: string;
+  className?: string;
+}
+
+export const Sparkline = memo(function Sparkline({
+  data,
+  width = 80,
+  height = 24,
+  color = '#3B82F6',
+  className = '',
+}: SparklineProps) {
+  const maxValue = Math.max(...data, 1);
+  const minValue = Math.min(...data, 0);
+  const range = maxValue - minValue || 1;
+
+  const points = data.map((value, index) => {
+    const x = (index / (data.length - 1 || 1)) * width;
+    const y = height - ((value - minValue) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={width} height={height} className={className}>
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+});
+
+// ==================== PROGRESS RING ====================
+interface ProgressRingProps {
+  progress: number; // 0-100
+  size?: number;
+  strokeWidth?: number;
+  color?: string;
+  bgColor?: string;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export const ProgressRing = memo(function ProgressRing({
+  progress,
+  size = 60,
+  strokeWidth = 6,
+  color = '#3B82F6',
+  bgColor,
+  className = '',
+  children,
+}: ProgressRingProps) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className={`relative inline-flex items-center justify-center ${className}`}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={bgColor || 'currentColor'}
+          strokeWidth={strokeWidth}
+          className={bgColor ? '' : 'text-gray-200 dark:text-gray-700'}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className="transition-all duration-500"
+        />
+      </svg>
+      {children && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+});

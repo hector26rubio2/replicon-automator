@@ -4,7 +4,7 @@
 
 import * as fs from 'fs';
 import Papa from 'papaparse';
-import type { CSVRow, LoadCSVResponse } from '@shared/types';
+import type { CSVRow, LoadCSVResponse } from '../../shared/types';
 
 export class CSVService {
   /**

@@ -5,7 +5,10 @@
 
 import { ipcMain, dialog, BrowserWindow } from 'electron';
 import Store from 'electron-store';
-import { PlaywrightAutomation, CSVService, CredentialsService } from '../services';
+import { PlaywrightAutomation, CSVService } from '../services';
+import { CredentialsService } from '../services/unified-credentials.service';
+import * as automationEnhanced from '../services/automation-enhanced.service';
+import type { CSVRow } from '../../shared/types';
 
 interface IPCControllerDeps {
   store: Store<Record<string, unknown>>;
@@ -21,6 +24,11 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
   
   const csvService = new CSVService();
   const credentialsService = new CredentialsService();
+
+  // Preload browser on startup for faster automation start
+  automationEnhanced.preloadBrowser().catch(() => {
+    // Silently fail - browser will be created on demand
+  });
 
   // ═══════════════════════════════════════════════════════════
   // CSV HANDLERS
@@ -42,7 +50,7 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
     return csvService.loadCSV(result.filePaths[0]);
   });
 
-  ipcMain.handle('csv:save', async (_, data: string[][]) => {
+  ipcMain.handle('csv:save', async (_, data: CSVRow[]) => {
     const mainWindow = getMainWindow();
     if (!mainWindow) return { success: false, error: 'No window available' };
 
@@ -132,6 +140,85 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
       automation.togglePause();
     }
     return { success: true };
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // AUTOMATION ENHANCED HANDLERS (Dry Run, Validation, Recovery)
+  // ═══════════════════════════════════════════════════════════
+
+  ipcMain.handle('automation:validate', async (_, data: { csvData: CSVRow[]; mappings: Record<string, unknown>; horarios: unknown[] }) => {
+    try {
+      const result = automationEnhanced.validateAutomationData(
+        data.csvData,
+        data.mappings as Record<string, { name: string; projects: Record<string, string> }>,
+        data.horarios as { start_time: string; end_time: string }[]
+      );
+      return { success: true, result };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:dryRun', async (_, data: { csvData: CSVRow[]; mappings: Record<string, unknown>; horarios: unknown[] }) => {
+    try {
+      const result = automationEnhanced.dryRun(
+        data.csvData,
+        data.mappings as Record<string, { name: string; projects: Record<string, string> }>,
+        data.horarios as { start_time: string; end_time: string }[]
+      );
+      return { success: true, result };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:saveCheckpoint', async (_, checkpoint) => {
+    try {
+      automationEnhanced.saveCheckpoint(checkpoint);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:loadCheckpoint', async (_, automationId) => {
+    try {
+      const checkpoint = await automationEnhanced.loadCheckpoint(automationId);
+      return { success: true, checkpoint };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:hasPendingRecovery', async () => {
+    try {
+      const hasPending = await automationEnhanced.hasPendingRecovery();
+      return { success: true, hasPending };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:getPendingCheckpoints', async () => {
+    try {
+      const checkpoints = await automationEnhanced.getPendingCheckpoints();
+      return { success: true, checkpoints };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:clearCheckpoint', async (_, automationId) => {
+    try {
+      await automationEnhanced.clearCheckpoint(automationId);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  });
+
+  ipcMain.handle('automation:isEncryptionAvailable', async () => {
+    return credentialsService.isEncryptionAvailable();
   });
 
   // ═══════════════════════════════════════════════════════════

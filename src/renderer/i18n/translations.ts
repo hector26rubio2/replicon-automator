@@ -328,6 +328,19 @@ export const translations = {
       viewFullHistory: 'View full history',
       records: 'records',
       month: 'Month',
+      // Charts
+      charts: {
+        statusDistribution: 'Status Distribution',
+        monthlyTrend: 'Monthly Trend',
+        durationTrend: 'Duration Trend',
+        executionTrend: 'Execution Trend',
+        successful: 'Successful',
+        failed: 'Failed',
+        minutes: 'min',
+        executions: 'Executions',
+        duration: 'Duration',
+        noData: 'No data available',
+      },
     },
 
     // Toasts/Notifications
@@ -877,6 +890,19 @@ export const translations = {
       viewFullHistory: 'Ver historial completo',
       records: 'registros',
       month: 'Mes',
+      // Gráficos
+      charts: {
+        statusDistribution: 'Distribución de Estados',
+        monthlyTrend: 'Tendencia Mensual',
+        durationTrend: 'Tendencia de Duración',
+        executionTrend: 'Tendencia de Ejecuciones',
+        successful: 'Exitosas',
+        failed: 'Fallidas',
+        minutes: 'min',
+        executions: 'Ejecuciones',
+        duration: 'Duración',
+        noData: 'Sin datos disponibles',
+      },
     },
 
     // Toasts/Notifications

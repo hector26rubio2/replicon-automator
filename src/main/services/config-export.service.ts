@@ -6,7 +6,7 @@ import { app } from 'electron';
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
-import type { AppConfig, TimeSlot, AccountMappings } from '@shared/types';
+import type { AppConfig, TimeSlot, AccountMappings } from '../../shared/types';
 
 export interface ExportableConfig {
   version: string;

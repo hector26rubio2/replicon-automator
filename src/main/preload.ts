@@ -30,6 +30,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopAutomation: () => ipcRenderer.invoke('automation:stop'),
   pauseAutomation: () => ipcRenderer.invoke('automation:pause'),
 
+  // Automatización Avanzada (Dry Run, Validation, Recovery)
+  validateAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown> }) =>
+    ipcRenderer.invoke('automation:validate', data),
+  dryRunAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown>; config: Record<string, unknown> }) =>
+    ipcRenderer.invoke('automation:dryRun', data),
+  saveCheckpoint: (checkpoint: { automationId: string; currentRowIndex: number; processedRows: number[]; state: Record<string, unknown> }) =>
+    ipcRenderer.invoke('automation:saveCheckpoint', checkpoint),
+  loadCheckpoint: (automationId: string) =>
+    ipcRenderer.invoke('automation:loadCheckpoint', automationId),
+  hasPendingRecovery: () =>
+    ipcRenderer.invoke('automation:hasPendingRecovery'),
+  getPendingCheckpoints: () =>
+    ipcRenderer.invoke('automation:getPendingCheckpoints'),
+  clearCheckpoint: (automationId: string) =>
+    ipcRenderer.invoke('automation:clearCheckpoint', automationId),
+  isEncryptionAvailable: () =>
+    ipcRenderer.invoke('automation:isEncryptionAvailable'),
+
   // App info y updates
   getAppVersion: () => ipcRenderer.invoke('app:version'),
   checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
@@ -101,6 +119,19 @@ declare global {
       startAutomation: (request: StartAutomationRequest) => Promise<{ success: boolean; error?: string }>;
       stopAutomation: () => Promise<{ success: boolean }>;
       pauseAutomation: () => Promise<{ success: boolean }>;
+      // Advanced automation
+      validateAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown> }) => 
+        Promise<{ success: boolean; result?: { isValid: boolean; errors: string[]; warnings: string[]; suggestions: string[] }; error?: string }>;
+      dryRunAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown>; config: Record<string, unknown> }) =>
+        Promise<{ success: boolean; result?: { steps: unknown[]; estimatedDuration: number; warnings: string[] }; error?: string }>;
+      saveCheckpoint: (checkpoint: { automationId: string; currentRowIndex: number; processedRows: number[]; state: Record<string, unknown> }) =>
+        Promise<{ success: boolean; error?: string }>;
+      loadCheckpoint: (automationId: string) =>
+        Promise<{ success: boolean; checkpoint?: unknown; error?: string }>;
+      hasPendingRecovery: () => Promise<{ success: boolean; hasPending?: boolean; error?: string }>;
+      getPendingCheckpoints: () => Promise<{ success: boolean; checkpoints?: unknown[]; error?: string }>;
+      clearCheckpoint: (automationId: string) => Promise<{ success: boolean; error?: string }>;
+      isEncryptionAvailable: () => Promise<boolean>;
       getAppVersion: () => Promise<string>;
       checkForUpdates: () => Promise<{ updateAvailable: boolean; version?: string }>;
       onUpdateProgress: (callback: (progress: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => () => void;

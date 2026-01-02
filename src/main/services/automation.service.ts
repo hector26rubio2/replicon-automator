@@ -13,9 +13,9 @@ import type {
   AutomationProgress,
   LogEntry,
   AppConfig 
-} from '@shared/types';
-import { militaryToStandard, delay } from '@shared/utils';
-import { SPECIAL_ACCOUNTS } from '@shared/constants';
+} from '../../shared/types';
+import { militaryToStandard, delay } from '../../shared/utils';
+import { SPECIAL_ACCOUNTS } from '../../shared/constants';
 
 export class PlaywrightAutomation {
   private browser: Browser | null = null;

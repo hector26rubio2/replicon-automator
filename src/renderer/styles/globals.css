@@ -8,13 +8,42 @@
   box-sizing: border-box;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   THEME TRANSITION SYSTEM - Smooth & Uniform
+   ═══════════════════════════════════════════════════════════ */
+
+/* Base transition for theme changes */
+:root {
+  --theme-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apply smooth transitions to all theme-aware elements */
+body,
+.card,
+.btn,
+.tab,
+.glass,
+input,
+select,
+textarea,
+[class*="bg-"],
+[class*="text-"],
+[class*="border-"] {
+  transition: 
+    background-color var(--theme-transition),
+    background var(--theme-transition),
+    color var(--theme-transition),
+    border-color var(--theme-transition),
+    box-shadow var(--theme-transition),
+    opacity var(--theme-transition);
+}
+
 /* Light mode (default) */
 body {
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
   min-height: 100vh;
   color: #1e293b;
-  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Dark mode */
@@ -24,7 +53,8 @@ html.dark body {
   color: #e2e8f0;
 }
 
-/* No transitions during theme switch */
+/* Instant transition for initial load (prevents flash) */
+.no-transitions,
 .no-transitions * {
   transition: none !important;
 }

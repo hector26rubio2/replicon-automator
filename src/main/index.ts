@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import Store from 'electron-store';
 import { PlaywrightAutomation } from './services';
 import { setupIPCHandlers, setupGlobalShortcuts, unregisterAllShortcuts } from './controllers';
+import { closeBrowser } from './services/automation-enhanced.service';
 import { DEFAULT_CONFIG, DEFAULT_MAPPINGS, DEFAULT_HORARIOS } from '../shared/constants';
 
 // ═══════════════════════════════════════════════════════════
@@ -125,4 +126,6 @@ app.on('before-quit', async () => {
   if (automation) {
     await automation.stop();
   }
+  // Close preloaded browser if any
+  await closeBrowser();
 });

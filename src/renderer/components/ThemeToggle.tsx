@@ -42,11 +42,26 @@ export function ThemeToggle(): React.ReactElement {
   return (
     <button
       onClick={handleClick}
-      className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className="
+        relative p-2 rounded-lg 
+        bg-gray-100 dark:bg-slate-800
+        hover:bg-gray-200 dark:hover:bg-slate-700 
+        border border-gray-200 dark:border-slate-600
+        transition-all duration-300 ease-out
+        hover:scale-105 active:scale-95
+        focus:outline-none focus:ring-2 focus:ring-primary-500/50
+      "
       title={`${t('theme.current')}: ${getThemeLabel(theme)} (${getThemeLabel(resolvedTheme)})\n${t('theme.clickToChange')}`}
       aria-label={`${t('theme.current')}: ${getThemeLabel(theme)}`}
     >
-      <span className="text-xl">{THEME_ICONS[theme]}</span>
+      <span 
+        className="text-xl inline-block transition-transform duration-300"
+        style={{ 
+          transform: resolvedTheme === 'dark' ? 'rotate(-15deg)' : 'rotate(15deg)'
+        }}
+      >
+        {THEME_ICONS[theme]}
+      </span>
       {theme === 'system' && (
         <span className="text-xs ml-1 opacity-50">
           ({resolvedTheme === 'dark' ? '🌙' : '☀️'})

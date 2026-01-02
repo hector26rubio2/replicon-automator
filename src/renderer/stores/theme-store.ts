@@ -60,18 +60,24 @@ function applyTheme(theme: 'light' | 'dark', skipTransition = false): void {
   if (typeof document !== 'undefined') {
     const root = document.documentElement;
     
+    // Solo skip transition en carga inicial
     if (skipTransition) {
       root.classList.add('no-transitions');
+    }
+    
+    // Aplicar tema
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    root.setAttribute('data-theme', theme);
+    
+    // Remover no-transitions después de un frame
+    if (skipTransition) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           root.classList.remove('no-transitions');
         });
       });
     }
-    
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    root.setAttribute('data-theme', theme);
   }
 }
 

@@ -3,7 +3,7 @@
  */
 
 import Store from 'electron-store';
-import type { Credentials } from '@shared/types';
+import type { Credentials } from '../../shared/types';
 import { createLogger } from '../utils';
 
 const logger = createLogger('CredentialsService');
