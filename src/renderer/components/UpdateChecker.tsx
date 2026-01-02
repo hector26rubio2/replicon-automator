@@ -52,9 +52,12 @@ export function UpdateChecker() {
   }, [state, showToast, t]);
 
   const handleCheckUpdates = useCallback(async () => {
+    console.log('[UpdateChecker] Button clicked, checking for updates...');
     setState('checking');
     try {
+      console.log('[UpdateChecker] Calling electronAPI.checkForUpdates()...');
       const result = await window.electronAPI.checkForUpdates();
+      console.log('[UpdateChecker] Result:', result);
       if (result.updateAvailable && result.version) {
         setState('available');
         setNewVersion(result.version);
@@ -63,7 +66,8 @@ export function UpdateChecker() {
         setState('idle');
         showToast('success', t('updates.upToDate'));
       }
-    } catch {
+    } catch (error) {
+      console.error('[UpdateChecker] Error:', error);
       setState('idle');
       showToast('error', t('updates.error'));
     }
@@ -123,16 +127,25 @@ export function UpdateChecker() {
         </button>
       )}
 
-      {state === 'downloading' && progress && (
+      {state === 'downloading' && (
         <div className="flex items-center gap-2">
-          <div className="w-20 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div className="w-24 h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-primary-500 transition-all duration-300"
-              style={{ width: `${progress.percent}%` }}
+              className="h-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-300"
+              style={{ width: `${progress?.percent || 0}%` }}
             />
           </div>
-          <span className="text-xs text-gray-500 dark:text-slate-400">
-            {progress.percent.toFixed(0)}% ({formatBytes(progress.bytesPerSecond)}/s)
+          <span className="text-xs text-gray-500 dark:text-slate-400 min-w-[80px]">
+            {progress ? (
+              <>
+                {progress.percent.toFixed(0)}% 
+                <span className="text-[10px] ml-1">
+                  ({formatBytes(progress.bytesPerSecond)}/s)
+                </span>
+              </>
+            ) : (
+              <span className="animate-pulse">⏳ {t('updates.downloading')}</span>
+            )}
           </span>
         </div>
       )}

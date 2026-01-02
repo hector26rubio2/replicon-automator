@@ -1,0 +1,5 @@
+owner: hector-rubio-tabares
+repo: replicon-automator
+provider: github
+updaterCacheDirName: replicon-automator-updater
+releaseType: release

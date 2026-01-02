@@ -42,12 +42,21 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 
 const STORAGE_KEY = 'replicon-onboarding-complete';
 
+// En modo desarrollo, permite forzar mostrar el onboarding
+const isDev = import.meta.env.DEV;
+
 export function OnboardingModal() {
   const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
+  // En dev, mostrar por defecto al cargar la página
+  const [isOpen, setIsOpen] = useState(isDev);
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
+    // En modo desarrollo, mostrar siempre al cargar (ya se hace con el useState)
+    if (isDev) {
+      return;
+    }
+    
     // Check if onboarding was completed
     const completed = localStorage.getItem(STORAGE_KEY);
     if (!completed) {

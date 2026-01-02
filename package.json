@@ -58,6 +58,7 @@
   "build": {
     "appId": "com.hdrt.replicon-automator",
     "productName": "Replicon Automator",
+    "artifactName": "${productName} Setup.${ext}",
     "directories": {
       "output": "release"
     },
@@ -65,11 +66,6 @@
       "dist/**/*",
       "package.json"
     ],
-    "publish": {
-      "provider": "github",
-      "owner": "hector-rubio-tabares",
-      "repo": "replicon-automator"
-    },
     "win": {
       "target": [
         "nsis",
@@ -80,6 +76,15 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "${productName} Portable.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "hector-rubio-tabares",
+      "repo": "replicon-automator",
+      "releaseType": "release"
     }
   }
 }
