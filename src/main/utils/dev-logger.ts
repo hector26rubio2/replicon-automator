@@ -126,6 +126,12 @@ export function setupDevLogger() {
   process.on('uncaughtException', (error) => {
     writeLog('FATAL', 'MAIN', `Uncaught Exception: ${error.message}`);
     writeLog('FATAL', 'MAIN', `Stack: ${error.stack}`);
+    
+    // Mostrar diálogo de error en producción
+    if (app.isPackaged) {
+      const { dialog } = require('electron');
+      dialog.showErrorBox('Application Error', `${error.message}\n\nCheck logs at C:\\RepliconLogs for details.`);
+    }
   });
 
   process.on('unhandledRejection', (reason) => {

@@ -55,7 +55,16 @@ export default function AutomationTab({
                 <input
                   type="email"
                   value={credentials.email}
-                  onChange={(e) => onCredentialsChange({ ...credentials, email: e.target.value })}
+                  onChange={(e) => {
+                    window.electronAPI?.sendLogToMain?.('INFO', 'CredentialsInput', `Email onChange: ${e.target.value.length} chars`);
+                    onCredentialsChange({ ...credentials, email: e.target.value });
+                  }}
+                  onFocus={() => {
+                    window.electronAPI?.sendLogToMain?.('INFO', 'CredentialsInput', 'Email input focused');
+                  }}
+                  onKeyDown={(e) => {
+                    window.electronAPI?.sendLogToMain?.('INFO', 'CredentialsInput', `Email keyDown: ${e.key}`);
+                  }}
                   placeholder="your.email@company.com"
                   className="w-full"
                   disabled={isRunning}
@@ -68,7 +77,16 @@ export default function AutomationTab({
                 <input
                   type="password"
                   value={credentials.password}
-                  onChange={(e) => onCredentialsChange({ ...credentials, password: e.target.value })}
+                  onChange={(e) => {
+                    window.electronAPI?.sendLogToMain?.('INFO', 'CredentialsInput', `Password onChange: ${e.target.value.length} chars`);
+                    onCredentialsChange({ ...credentials, password: e.target.value });
+                  }}
+                  onFocus={() => {
+                    window.electronAPI?.sendLogToMain?.('INFO', 'CredentialsInput', 'Password input focused');
+                  }}
+                  onKeyDown={(e) => {
+                    window.electronAPI?.sendLogToMain?.('INFO', 'CredentialsInput', `Password keyDown: ${e.key}`);
+                  }}
                   placeholder="••••••••"
                   className="w-full"
                   disabled={isRunning}

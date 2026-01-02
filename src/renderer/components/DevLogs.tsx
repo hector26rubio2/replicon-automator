@@ -18,12 +18,20 @@ export function DevLogs() {
   const idCounter = useRef(0);
 
   useEffect(() => {
-    const isDev = import.meta.env.DEV;
-    
-    // Escuchar logs del proceso main
+    // Escuchar logs del proceso main y mostrarlos en DevTools
     const unsubscribe = window.electronAPI.onMainLog?.((log: { level: string; message: string }) => {
-      // En producción, solo capturar errores
-      if (!isDev && log.level !== 'error') return;
+      // Imprimir en consola de DevTools para que sean visibles
+      const mainLogMessage = `[MAIN] ${log.message}`;
+      switch (log.level) {
+        case 'error':
+          console.error(mainLogMessage);
+          break;
+        case 'warn':
+          console.warn(mainLogMessage);
+          break;
+        default:
+          console.log(mainLogMessage);
+      }
       
       const newLog: LogEntry = {
         id: idCounter.current++,

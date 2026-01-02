@@ -62,7 +62,7 @@ function createWindow(): void {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
-      devTools: isDev, // Deshabilitar DevTools en producción
+      devTools: true, // Habilitar DevTools siempre para debugging
     },
     icon: appIcon || iconPath,
     titleBarStyle: 'default',
@@ -83,6 +83,8 @@ function createWindow(): void {
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../../renderer/index.html'));
+    // Abrir DevTools también en producción para debugging
+    mainWindow.webContents.openDevTools();
   }
 
   mainWindow.once('ready-to-show', () => {

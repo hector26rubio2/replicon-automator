@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-01-02
+
+### Added
+- Full-screen error display for ALL errors in production (red overlay with error details)
+- DevTools enabled in production for debugging
+- Main process logs now visible in DevTools console (forwarded via IPC)
+- Error dialog for main process uncaught exceptions
+- Detailed logging in credential inputs (onFocus, onChange, onKeyDown)
+
+### Improved
+- Keyboard shortcuts only work when app window is focused
+- All errors (IPC, init, render, global) show visual feedback on screen
+- Better error messages with full stack traces
+
+### Fixed
+- Shortcuts no longer interfere with other applications
+
+### Technical
+- `mainWindow.isFocused()` check before executing shortcuts
+- `showErrorOnScreen()` function displays errors as overlay
+- DevTools open automatically in production for debugging
+
 ## [0.0.9] - 2026-01-02
 
 ### Improved

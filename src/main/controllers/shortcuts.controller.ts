@@ -1,5 +1,6 @@
 /**
  * Shortcuts Controller - Centraliza los atajos de teclado globales
+ * Solo funcionan cuando la ventana de la app tiene el foco
  */
 
 import { globalShortcut, BrowserWindow } from 'electron';
@@ -37,6 +38,9 @@ export function setupGlobalShortcuts(getMainWindow: () => BrowserWindow | null):
     globalShortcut.register(accelerator, () => {
       const mainWindow = getMainWindow();
       if (!mainWindow) return;
+      
+      // Solo ejecutar si la ventana tiene el foco
+      if (!mainWindow.isFocused()) return;
 
       const channel = `shortcut:${action}`;
       
