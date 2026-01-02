@@ -11,6 +11,9 @@ export type Language = 'en' | 'es';
 
 const translations = {
   en: {
+    common: {
+      cancel: 'Cancel',
+    },
     updates: {
       available: '🔄 Update Available',
       availableDesc: 'New version {{version}} available. Click to download.',
@@ -31,6 +34,11 @@ const translations = {
       download: 'Download',
       checkError: '❌ Error',
       checkErrorDesc: 'Could not check for updates. Verify your connection.',
+      installBeforeQuit: 'Update Pending',
+      installBeforeQuitMessage: 'Version {{version}} is ready to install',
+      installBeforeQuitDetail: 'Do you want to install the update before closing?',
+      installAndQuit: 'Install and Close',
+      quitWithoutUpdate: 'Close Without Updating',
     },
     automation: {
       started: '🚀 Automation Started',
@@ -51,6 +59,9 @@ const translations = {
     },
   },
   es: {
+    common: {
+      cancel: 'Cancelar',
+    },
     updates: {
       available: '🔄 Actualización Disponible',
       availableDesc: 'Nueva versión {{version}} disponible. Click para descargar.',
@@ -71,6 +82,11 @@ const translations = {
       download: 'Descargar',
       checkError: '❌ Error',
       checkErrorDesc: 'No se pudo verificar actualizaciones. Verifica tu conexión.',
+      installBeforeQuit: 'Actualización Pendiente',
+      installBeforeQuitMessage: 'La versión {{version}} está lista para instalar',
+      installBeforeQuitDetail: '¿Deseas instalar la actualización antes de cerrar?',
+      installAndQuit: 'Instalar y Cerrar',
+      quitWithoutUpdate: 'Cerrar Sin Actualizar',
     },
     automation: {
       started: '🚀 Automatización Iniciada',

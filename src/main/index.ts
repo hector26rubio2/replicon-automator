@@ -10,6 +10,7 @@ import Store from 'electron-store';
 import { PlaywrightAutomation } from './services';
 import { setupIPCHandlers, setupGlobalShortcuts, unregisterAllShortcuts } from './controllers';
 import { closeBrowser } from './services/automation-enhanced.service';
+import { updaterService } from './services/updater.service';
 import { DEFAULT_CONFIG, DEFAULT_MAPPINGS, DEFAULT_HORARIOS } from '../shared/constants';
 import { setupDevLogger, setMainWindowForLogs } from './utils/dev-logger';
 
@@ -111,6 +112,11 @@ app.whenReady().then(() => {
     setMainWindowForLogs(mainWindow);
   }
   
+  // Inicializar el servicio de actualizaciones
+  if (mainWindow) {
+    updaterService.initialize(mainWindow);
+  }
+  
   setupIPCHandlers({
     store,
     getMainWindow,
@@ -129,9 +135,13 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   if (process.platform !== 'darwin') {
-    app.quit();
+    // Preguntar si quiere instalar la actualización antes de cerrar
+    const shouldQuit = await updaterService.promptInstallOnQuit();
+    if (shouldQuit) {
+      app.quit();
+    }
   }
 });
 

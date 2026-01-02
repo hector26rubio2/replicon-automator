@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-01-02
+
+### Added
+- Prompt to install pending update when closing the application
+- `showInstallDialog()` method for showing install dialog when update is ready
+- New i18n translations for update install prompts
+
+### Fixed
+- Auto-updater artifact name mismatch causing 404 errors (changed from hyphens to dots)
+- Duplicate update dialogs appearing when checking for updates
+- App hanging when checking updates after download completed
+- Unused variable TypeScript error in retry.ts
+
+### Improved
+- Better update flow with `dialogShowing` and `isDownloading` flags to prevent duplicates
+- Shows install dialog immediately if update was already downloaded
+- Cleaner update experience with single dialog pattern
+
+### Technical
+- Changed `artifactName` in package.json to `${productName}.Setup.${ext}`
+- Added `promptInstallOnQuit()` method to updater service
+- Prefixed unused callback parameter with underscore (`_delay`)
+
 ## [0.0.5] - 2026-01-02
 
 ### Added

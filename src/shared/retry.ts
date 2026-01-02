@@ -75,7 +75,7 @@ export async function withNetworkRetry<T>(
     maxDelayMs: 10000,
     backoffMultiplier: 2,
     retryCondition: isRetryableError,
-    onRetry: (attempt, error, delay) => {
+    onRetry: (attempt, error, _delay) => {
       onRetry?.(attempt, error);
       // Log silencioso - el callback onRetry se encarga de notificar
     },

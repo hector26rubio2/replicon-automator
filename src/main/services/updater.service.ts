@@ -23,6 +23,8 @@ class UpdaterService {
   private updateDownloaded = false;
   private lastUpdateInfo: UpdateInfo | null = null;
   private updateAvailable = false;
+  private dialogShowing = false; // Evitar múltiples diálogos
+  private isDownloading = false; // Evitar múltiples descargas
 
   initialize(mainWindow: BrowserWindow): void {
     this.mainWindow = mainWindow;
@@ -61,11 +63,9 @@ class UpdaterService {
       this.updateAvailable = true;
       this.lastUpdateInfo = info;
 
-      notificationService.info(
-        t('updates.available'),
-        t('updates.availableDesc', { version: info.version }),
-        () => this.downloadUpdate()
-      );
+      // Solo mostrar diálogo si no hay otro abierto
+      if (this.dialogShowing) return;
+      this.dialogShowing = true;
 
       if (this.mainWindow && this.mainWindow.isVisible()) {
         const result = await dialog.showMessageBox(this.mainWindow, {
@@ -78,9 +78,18 @@ class UpdaterService {
           cancelId: 1,
         });
 
+        this.dialogShowing = false;
+
         if (result.response === 0) {
           this.downloadUpdate();
         }
+      } else {
+        this.dialogShowing = false;
+        notificationService.info(
+          t('updates.available'),
+          t('updates.availableDesc', { version: info.version }),
+          () => this.downloadUpdate()
+        );
       }
     });
 
@@ -107,7 +116,15 @@ class UpdaterService {
 
     autoUpdater.on('update-downloaded', async (info: UpdateInfo) => {
       logger.info(`Update downloaded: ${info.version}`);
+      
+      // Evitar procesar si ya estaba marcado como descargado
+      if (this.updateDownloaded) {
+        logger.info('Update already marked as downloaded, skipping dialog');
+        return;
+      }
+      
       this.updateDownloaded = true;
+      this.isDownloading = false;
       this.lastUpdateInfo = info;
 
       this.mainWindow?.setProgressBar(-1);
@@ -117,11 +134,9 @@ class UpdaterService {
         version: info.version,
       });
 
-      notificationService.success(
-        t('updates.ready'),
-        t('updates.readyDesc', { version: info.version }),
-        () => this.installUpdate()
-      );
+      // Solo mostrar diálogo si no hay otro abierto
+      if (this.dialogShowing) return;
+      this.dialogShowing = true;
 
       if (this.mainWindow && this.mainWindow.isVisible()) {
         const result = await dialog.showMessageBox(this.mainWindow, {
@@ -134,9 +149,18 @@ class UpdaterService {
           cancelId: 1,
         });
 
+        this.dialogShowing = false;
+
         if (result.response === 0) {
           this.installUpdate();
         }
+      } else {
+        this.dialogShowing = false;
+        notificationService.success(
+          t('updates.ready'),
+          t('updates.readyDesc', { version: info.version }),
+          () => this.installUpdate()
+        );
       }
     });
 
@@ -148,8 +172,23 @@ class UpdaterService {
   }
 
   async checkForUpdates(silent = false): Promise<{ updateAvailable: boolean; version: string }> {
+    // Si ya hay una actualización descargada, mostrar diálogo de instalación
+    if (this.updateDownloaded && this.lastUpdateInfo) {
+      logger.info('Update already downloaded, showing install dialog');
+      this.showInstallDialog(this.lastUpdateInfo);
+      return { 
+        updateAvailable: true, 
+        version: this.lastUpdateInfo.version 
+      };
+    }
+
+    // Si ya está verificando, esperar un momento y retornar estado actual
     if (this.isChecking) {
-      return { updateAvailable: this.updateAvailable, version: this.lastUpdateInfo?.version || app.getVersion() };
+      logger.info('Already checking for updates, returning current state');
+      return { 
+        updateAvailable: this.updateAvailable, 
+        version: this.lastUpdateInfo?.version || app.getVersion() 
+      };
     }
 
     try {
@@ -158,7 +197,10 @@ class UpdaterService {
       
       const result = await autoUpdater.checkForUpdates();
 
+      // Esperar un momento para que los eventos se procesen
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      this.isChecking = false; // Asegurar que se resetea
 
       return {
         updateAvailable: this.updateAvailable,
@@ -177,15 +219,50 @@ class UpdaterService {
     }
   }
 
+  private async showInstallDialog(info: UpdateInfo): Promise<void> {
+    if (this.dialogShowing) return;
+    this.dialogShowing = true;
+
+    if (this.mainWindow && this.mainWindow.isVisible()) {
+      const result = await dialog.showMessageBox(this.mainWindow, {
+        type: 'info',
+        title: t('updates.installTitle'),
+        message: t('updates.installMessage', { version: info.version }),
+        detail: t('updates.installDetail'),
+        buttons: [t('updates.restartNow'), t('updates.later')],
+        defaultId: 0,
+        cancelId: 1,
+      });
+
+      this.dialogShowing = false;
+
+      if (result.response === 0) {
+        this.installUpdate();
+      }
+    } else {
+      this.dialogShowing = false;
+    }
+  }
+
   async downloadUpdate(): Promise<void> {
+    // Si ya está descargada o descargando, no hacer nada
+    if (this.updateDownloaded) {
+      logger.info('Update already downloaded, skipping download');
+      return;
+    }
+
+    if (this.isDownloading) {
+      logger.info('Download already in progress, skipping');
+      return;
+    }
+
+    this.isDownloading = true;
+
     try {
-      notificationService.info(
-        t('updates.downloading'),
-        t('updates.downloadingDesc')
-      );
       await autoUpdater.downloadUpdate();
     } catch (error) {
       logger.error('Failed to download update:', error);
+      this.isDownloading = false;
       notificationService.error(
         t('updates.downloadError'),
         t('updates.downloadErrorDesc')
@@ -196,6 +273,39 @@ class UpdaterService {
   installUpdate(): void {
     if (this.updateDownloaded) {
       autoUpdater.quitAndInstall(false, true);
+    }
+  }
+
+  // Llamar antes de cerrar la app
+  async promptInstallOnQuit(): Promise<boolean> {
+    if (!this.updateDownloaded || !this.lastUpdateInfo) {
+      return true; // Permitir cerrar
+    }
+
+    if (!this.mainWindow || this.mainWindow.isDestroyed()) {
+      return true;
+    }
+
+    const result = await dialog.showMessageBox(this.mainWindow, {
+      type: 'question',
+      title: t('updates.installBeforeQuit'),
+      message: t('updates.installBeforeQuitMessage', { version: this.lastUpdateInfo.version }),
+      detail: t('updates.installBeforeQuitDetail'),
+      buttons: [t('updates.installAndQuit'), t('updates.quitWithoutUpdate'), t('common.cancel')],
+      defaultId: 0,
+      cancelId: 2,
+    });
+
+    if (result.response === 0) {
+      // Instalar y cerrar
+      this.installUpdate();
+      return false; // No cerrar manualmente, el installer lo hace
+    } else if (result.response === 1) {
+      // Cerrar sin actualizar
+      return true;
+    } else {
+      // Cancelar
+      return false;
     }
   }
 

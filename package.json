@@ -58,7 +58,7 @@
   "build": {
     "appId": "com.hdrt.replicon-automator",
     "productName": "Replicon Automator",
-    "artifactName": "${productName} Setup.${ext}",
+    "artifactName": "${productName}.Setup.${ext}",
     "directories": {
       "output": "release"
     },
@@ -78,7 +78,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "portable": {
-      "artifactName": "${productName} Portable.${ext}"
+      "artifactName": "${productName}.Portable.${ext}"
     },
     "publish": {
       "provider": "github",
