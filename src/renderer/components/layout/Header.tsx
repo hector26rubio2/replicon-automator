@@ -14,7 +14,7 @@ export default function Header({ status, progress, children }: HeaderProps) {
   const progressPercent = getProgressPercent(progress);
 
   return (
-    <header className="bg-white/90 dark:bg-dark-200/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 px-6 py-4 transition-colors">
+    <header className="sticky top-0 z-40 bg-white/90 dark:bg-dark-200/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 px-6 py-4 transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
@@ -23,7 +23,7 @@ export default function Header({ status, progress, children }: HeaderProps) {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('header.title')}</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">v3.0 - {t('header.subtitle')}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t('header.subtitle')}</p>
             </div>
           </div>
         </div>

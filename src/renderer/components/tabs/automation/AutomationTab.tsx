@@ -46,7 +46,7 @@ export default function AutomationTab({
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <span className="text-2xl">🔐</span>
-              {t('config.accounts.title')} Okta
+              {t('config.accounts.title')}
             </h2>
 
             <div className="grid gap-4">

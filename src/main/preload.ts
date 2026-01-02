@@ -30,6 +30,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopAutomation: () => ipcRenderer.invoke('automation:stop'),
   pauseAutomation: () => ipcRenderer.invoke('automation:pause'),
 
+  // App info y updates
+  getAppVersion: () => ipcRenderer.invoke('app:version'),
+  checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
+  onUpdateProgress: (callback: (progress: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => {
+    ipcRenderer.on('update:progress', (_, progress) => callback(progress));
+    return () => ipcRenderer.removeAllListeners('update:progress');
+  },
+
   // Eventos de automatización
   onAutomationProgress: (callback: (progress: AutomationProgress) => void) => {
     ipcRenderer.on('automation:progress', (_, progress) => callback(progress));
@@ -47,6 +55,36 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('automation:error', (_, error) => callback(error));
     return () => ipcRenderer.removeAllListeners('automation:error');
   },
+
+  // Atajos de teclado globales
+  onShortcutLoadCSV: (callback: () => void) => {
+    ipcRenderer.on('shortcut:load-csv', () => callback());
+    return () => ipcRenderer.removeAllListeners('shortcut:load-csv');
+  },
+  onShortcutSaveCSV: (callback: () => void) => {
+    ipcRenderer.on('shortcut:save-csv', () => callback());
+    return () => ipcRenderer.removeAllListeners('shortcut:save-csv');
+  },
+  onShortcutRunAutomation: (callback: () => void) => {
+    ipcRenderer.on('shortcut:run-automation', () => callback());
+    return () => ipcRenderer.removeAllListeners('shortcut:run-automation');
+  },
+  onShortcutToggleTheme: (callback: () => void) => {
+    ipcRenderer.on('shortcut:toggle-theme', () => callback());
+    return () => ipcRenderer.removeAllListeners('shortcut:toggle-theme');
+  },
+  onShortcutToggleLanguage: (callback: () => void) => {
+    ipcRenderer.on('shortcut:toggle-language', () => callback());
+    return () => ipcRenderer.removeAllListeners('shortcut:toggle-language');
+  },
+  onShortcutGoToTab: (callback: (tab: number) => void) => {
+    ipcRenderer.on('shortcut:go-to-tab', (_, tab) => callback(tab));
+    return () => ipcRenderer.removeAllListeners('shortcut:go-to-tab');
+  },
+  onShortcutShowShortcuts: (callback: () => void) => {
+    ipcRenderer.on('shortcut:show-shortcuts', () => callback());
+    return () => ipcRenderer.removeAllListeners('shortcut:show-shortcuts');
+  },
 });
 
 // Tipos para TypeScript en el renderer
@@ -63,10 +101,20 @@ declare global {
       startAutomation: (request: StartAutomationRequest) => Promise<{ success: boolean; error?: string }>;
       stopAutomation: () => Promise<{ success: boolean }>;
       pauseAutomation: () => Promise<{ success: boolean }>;
+      getAppVersion: () => Promise<string>;
+      checkForUpdates: () => Promise<{ updateAvailable: boolean; version?: string }>;
+      onUpdateProgress: (callback: (progress: { percent: number; bytesPerSecond: number; transferred: number; total: number }) => void) => () => void;
       onAutomationProgress: (callback: (progress: AutomationProgress) => void) => () => void;
       onAutomationLog: (callback: (log: LogEntry) => void) => () => void;
       onAutomationComplete: (callback: (result: { success: boolean }) => void) => () => void;
       onAutomationError: (callback: (error: { error: string }) => void) => () => void;
+      onShortcutLoadCSV: (callback: () => void) => () => void;
+      onShortcutSaveCSV: (callback: () => void) => () => void;
+      onShortcutRunAutomation: (callback: () => void) => () => void;
+      onShortcutToggleTheme: (callback: () => void) => () => void;
+      onShortcutToggleLanguage: (callback: () => void) => () => void;
+      onShortcutGoToTab: (callback: (tab: number) => void) => () => void;
+      onShortcutShowShortcuts: (callback: () => void) => () => void;
     };
   }
 }

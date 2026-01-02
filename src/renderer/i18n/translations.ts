@@ -104,6 +104,7 @@ export const translations = {
       later: 'Later',
       newVersion: 'New version {{version}} available',
       downloadProgress: 'Downloading: {{percent}}%',
+      version: 'v{{version}}',
     },
 
     // Shortcuts
@@ -641,6 +642,7 @@ export const translations = {
       later: 'Más tarde',
       newVersion: 'Nueva versión {{version}} disponible',
       downloadProgress: 'Descargando: {{percent}}%',
+      version: 'v{{version}}',
     },
 
     // Notificaciones

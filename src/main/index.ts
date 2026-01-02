@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, nativeImage, globalShortcut } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Store from 'electron-store';
@@ -172,12 +172,80 @@ function setupIPCHandlers() {
     }
     return { success: true };
   });
+
+  // App version and updates
+  ipcMain.handle('app:version', () => {
+    return app.getVersion();
+  });
+
+  ipcMain.handle('app:check-updates', async () => {
+    // En desarrollo, simular que no hay actualizaciones
+    if (isDev) {
+      return { updateAvailable: false };
+    }
+    
+    try {
+      // Para producción, implementar con electron-updater
+      // TODO: Integrar electron-updater cuando esté configurado
+      return { updateAvailable: false };
+    } catch {
+      return { updateAvailable: false };
+    }
+  });
+}
+
+// Setup global keyboard shortcuts
+function setupGlobalShortcuts() {
+  // Ctrl+O - Abrir CSV
+  globalShortcut.register('CommandOrControl+O', () => {
+    mainWindow?.webContents.send('shortcut:load-csv');
+  });
+
+  // Ctrl+S - Guardar CSV
+  globalShortcut.register('CommandOrControl+S', () => {
+    mainWindow?.webContents.send('shortcut:save-csv');
+  });
+
+  // Ctrl+R - Ejecutar automatización
+  globalShortcut.register('CommandOrControl+R', () => {
+    mainWindow?.webContents.send('shortcut:run-automation');
+  });
+
+  // Ctrl+Shift+T - Cambiar tema
+  globalShortcut.register('CommandOrControl+Shift+T', () => {
+    mainWindow?.webContents.send('shortcut:toggle-theme');
+  });
+
+  // Ctrl+Shift+L - Cambiar idioma
+  globalShortcut.register('CommandOrControl+Shift+L', () => {
+    mainWindow?.webContents.send('shortcut:toggle-language');
+  });
+
+  // Ctrl+1,2,3,4 - Cambiar pestaña
+  globalShortcut.register('CommandOrControl+1', () => {
+    mainWindow?.webContents.send('shortcut:go-to-tab', 0);
+  });
+  globalShortcut.register('CommandOrControl+2', () => {
+    mainWindow?.webContents.send('shortcut:go-to-tab', 1);
+  });
+  globalShortcut.register('CommandOrControl+3', () => {
+    mainWindow?.webContents.send('shortcut:go-to-tab', 2);
+  });
+  globalShortcut.register('CommandOrControl+4', () => {
+    mainWindow?.webContents.send('shortcut:go-to-tab', 3);
+  });
+
+  // ? - Mostrar atajos (Shift+/)
+  globalShortcut.register('Shift+/', () => {
+    mainWindow?.webContents.send('shortcut:show-shortcuts');
+  });
 }
 
 // App lifecycle
 app.whenReady().then(() => {
   createWindow();
   setupIPCHandlers();
+  setupGlobalShortcuts();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -190,6 +258,11 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('will-quit', () => {
+  // Desregistrar todos los atajos globales
+  globalShortcut.unregisterAll();
 });
 
 app.on('before-quit', async () => {

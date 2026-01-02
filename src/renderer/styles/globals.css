@@ -8,35 +8,69 @@
   box-sizing: border-box;
 }
 
+/* Light mode (default) */
 body {
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
   min-height: 100vh;
+  color: #1e293b;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode */
+.dark body,
+html.dark body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
   color: #e2e8f0;
 }
 
-/* Custom scrollbar */
+/* No transitions during theme switch */
+.no-transitions * {
+  transition: none !important;
+}
+
+/* Light mode scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #e2e8f0;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3b82f6;
+  background: #94a3b8;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #2563eb;
 }
 
-/* Glassmorphism effect */
+/* Glassmorphism effect - Light mode */
 .glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Glassmorphism effect - Dark mode */
+.dark .glass {
   background: rgba(30, 41, 59, 0.7);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -71,21 +105,34 @@ body {
   }
 }
 
-/* Input styling */
+/* Input styling - Light mode */
 input, select, textarea {
-  @apply bg-dark-200 border border-slate-600 rounded-lg px-4 py-2 text-white;
+  @apply bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-900;
   @apply focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 focus:outline-none;
   @apply transition-all duration-200;
 }
 
+/* Input styling - Dark mode */
+.dark input, .dark select, .dark textarea {
+  @apply bg-dark-200 border-slate-600 text-white;
+}
+
 input::placeholder {
+  @apply text-gray-400;
+}
+
+.dark input::placeholder {
   @apply text-slate-500;
 }
 
 /* Button base styles */
 .btn {
   @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white;
+}
+
+.dark .btn {
+  @apply focus:ring-offset-dark-200;
 }
 
 .btn-primary {
@@ -108,23 +155,44 @@ input::placeholder {
   @apply focus:ring-amber-500;
 }
 
+/* Button secondary - Light mode */
 .btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-700;
+  @apply focus:ring-gray-400;
+}
+
+/* Button secondary - Dark mode */
+.dark .btn-secondary {
   @apply bg-slate-700 hover:bg-slate-600 text-white;
   @apply focus:ring-slate-500;
 }
 
-/* Card styling */
+/* Card styling - Light mode */
 .card {
-  @apply bg-dark-100/80 rounded-xl border border-slate-700/50 p-6;
+  @apply bg-white/80 rounded-xl border border-gray-200 p-6;
   @apply backdrop-blur-sm shadow-xl;
 }
 
-/* Tab styling */
+/* Card styling - Dark mode */
+.dark .card {
+  @apply bg-dark-100/80 border-slate-700/50;
+}
+
+/* Tab styling - Light mode */
 .tab {
-  @apply px-4 py-2 text-slate-400 hover:text-white transition-colors;
+  @apply px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors;
   @apply border-b-2 border-transparent;
 }
 
 .tab.active {
+  @apply text-primary-600 border-primary-500;
+}
+
+/* Tab styling - Dark mode */
+.dark .tab {
+  @apply text-slate-400 hover:text-white;
+}
+
+.dark .tab.active {
   @apply text-primary-400 border-primary-500;
 }

@@ -47,6 +47,15 @@ declare global {
       deleteScheduledTask?: (id: string) => Promise<void>;
       toggleScheduledTask?: (id: string) => Promise<void>;
       runScheduledTaskNow?: (id: string) => Promise<void>;
+
+      // Atajos de teclado globales
+      onShortcutLoadCSV: (callback: () => void) => () => void;
+      onShortcutSaveCSV: (callback: () => void) => () => void;
+      onShortcutRunAutomation: (callback: () => void) => () => void;
+      onShortcutToggleTheme: (callback: () => void) => () => void;
+      onShortcutToggleLanguage: (callback: () => void) => () => void;
+      onShortcutGoToTab: (callback: (tab: number) => void) => () => void;
+      onShortcutShowShortcuts: (callback: () => void) => () => void;
     };
   }
 }

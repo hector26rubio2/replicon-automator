@@ -67,15 +67,15 @@ export class ErrorBoundary extends Component<Props, State> {
       const t = (key: string) => getTranslation(lang, key);
 
       return (
-        <div className="min-h-screen bg-dark-100 flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-dark-200 rounded-xl border border-red-500/30 p-6 text-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-100 flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-white dark:bg-dark-200 rounded-xl border border-red-500/30 p-6 text-center">
             <div className="text-5xl mb-4">💥</div>
-            <h1 className="text-xl font-bold text-white mb-2">{t('common.somethingWentWrong')}</h1>
-            <p className="text-slate-400 text-sm mb-4">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('common.somethingWentWrong')}</h1>
+            <p className="text-gray-600 dark:text-slate-400 text-sm mb-4">
               {t('common.unexpectedError')}
             </p>
             {this.state.error && (
-              <pre className="text-xs text-red-400 bg-dark-300 p-3 rounded-lg mb-4 text-left overflow-auto max-h-32">
+              <pre className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-dark-300 p-3 rounded-lg mb-4 text-left overflow-auto max-h-32">
                 {this.state.error.message}
               </pre>
             )}

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from '@/i18n';
 
 export interface Shortcut {
@@ -11,8 +11,11 @@ export interface Shortcut {
 }
 
 export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
+  const shortcutsRef = useRef(shortcuts);
+  shortcutsRef.current = shortcuts;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
         target.tagName === 'INPUT' ||
@@ -22,7 +25,7 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
         if (event.key !== 'Escape') return;
       }
 
-      for (const shortcut of shortcuts) {
+      for (const shortcut of shortcutsRef.current) {
         const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
         const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;
         const altMatch = shortcut.alt ? event.altKey : !event.altKey;
@@ -34,14 +37,11 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]): void {
           return;
         }
       }
-    },
-    [shortcuts]
-  );
+    };
 
-  useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, []);
 }
 
 export function useAppShortcuts(actions: {
@@ -57,120 +57,98 @@ export function useAppShortcuts(actions: {
   onUndo?: () => void;
   onRedo?: () => void;
 }): void {
-  const { t } = useTranslation();
-  const shortcuts: Shortcut[] = [];
+  const actionsRef = useRef(actions);
+  actionsRef.current = actions;
 
-  if (actions.onSave) {
-    shortcuts.push({
-      key: 's',
-      ctrl: true,
-      action: actions.onSave,
-      description: t('shortcuts.saveCSV'),
-    });
-  }
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      
+      const ctrl = event.ctrlKey || event.metaKey;
+      const shift = event.shiftKey;
+      const key = event.key.toLowerCase();
 
-  if (actions.onLoad) {
-    shortcuts.push({
-      key: 'o',
-      ctrl: true,
-      action: actions.onLoad,
-      description: t('shortcuts.openCSV'),
-    });
-  }
 
-  if (actions.onRun) {
-    shortcuts.push({
-      key: 'r',
-      ctrl: true,
-      action: actions.onRun,
-      description: t('shortcuts.runAutomation'),
-    });
-  }
 
-  if (actions.onStop) {
-    shortcuts.push({
-      key: 'Escape',
-      action: actions.onStop,
-      description: t('shortcuts.stopAutomation'),
-    });
-  }
+      // Solo permitir Escape en inputs
+      if (isInput && event.key !== 'Escape') return;
 
-  if (actions.onToggleTheme) {
-    shortcuts.push({
-      key: 't',
-      ctrl: true,
-      shift: true,
-      action: actions.onToggleTheme,
-      description: t('shortcuts.changeTheme'),
-    });
-  }
+      // Ctrl+O - Abrir CSV
+      if (ctrl && !shift && key === 'o') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (actionsRef.current.onLoad) {
+          actionsRef.current.onLoad();
+        }
+        return;
+      }
 
-  if (actions.onToggleLanguage) {
-    shortcuts.push({
-      key: 'l',
-      ctrl: true,
-      shift: true,
-      action: actions.onToggleLanguage,
-      description: t('shortcuts.changeLanguage'),
-    });
-  }
+      // Ctrl+S - Guardar CSV
+      if (ctrl && !shift && key === 's') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (actionsRef.current.onSave) {
+          actionsRef.current.onSave();
+        }
+        return;
+      }
 
-  if (actions.onOpenCommandPalette) {
-    shortcuts.push({
-      key: 'k',
-      ctrl: true,
-      action: actions.onOpenCommandPalette,
-      description: t('shortcuts.openCommandPalette'),
-    });
-  }
+      // Ctrl+R - Ejecutar automatización
+      if (ctrl && !shift && key === 'r') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (actionsRef.current.onRun) {
+          actionsRef.current.onRun();
+        }
+        return;
+      }
 
-  if (actions.onGoToTab) {
-    for (let i = 1; i <= 4; i++) {
-      shortcuts.push({
-        key: String(i),
-        ctrl: true,
-        action: () => actions.onGoToTab!(i - 1),
-        description: `${t('shortcuts.goToTab')} ${i}`,
-      });
-    }
-  }
+      // Escape - Detener automatización
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (actionsRef.current.onStop) {
+          actionsRef.current.onStop();
+        }
+        return;
+      }
 
-  if (actions.onExportLogs) {
-    shortcuts.push({
-      key: 'e',
-      ctrl: true,
-      shift: true,
-      action: actions.onExportLogs,
-      description: t('shortcuts.exportLogs'),
-    });
-  }
+      // Ctrl+Shift+T - Cambiar tema
+      if (ctrl && shift && key === 't') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (actionsRef.current.onToggleTheme) {
+          actionsRef.current.onToggleTheme();
+        }
+        return;
+      }
 
-  if (actions.onUndo) {
-    shortcuts.push({
-      key: 'z',
-      ctrl: true,
-      action: actions.onUndo,
-      description: t('shortcuts.undo'),
-    });
-  }
+      // Ctrl+Shift+L - Cambiar idioma
+      if (ctrl && shift && key === 'l') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (actionsRef.current.onToggleLanguage) {
+          actionsRef.current.onToggleLanguage();
+        }
+        return;
+      }
 
-  if (actions.onRedo) {
-    shortcuts.push({
-      key: 'y',
-      ctrl: true,
-      action: actions.onRedo,
-      description: t('shortcuts.redo'),
-    });
-    shortcuts.push({
-      key: 'z',
-      ctrl: true,
-      shift: true,
-      action: actions.onRedo,
-      description: t('shortcuts.redo'),
-    });
-  }
+      // Ctrl+1-4 - Cambiar pestaña
+      if (ctrl && !shift && ['1', '2', '3', '4'].includes(key)) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (actionsRef.current.onGoToTab) {
+          actionsRef.current.onGoToTab(parseInt(key) - 1);
+        }
+        return;
+      }
+    };
 
-  useKeyboardShortcuts(shortcuts);
+    window.addEventListener('keydown', handleKeyDown, true); // Use capture phase
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, []);
 }
 
 export function useShortcutsList(): { key: string; description: string }[] {

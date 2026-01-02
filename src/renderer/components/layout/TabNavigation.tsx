@@ -16,7 +16,7 @@ export default function TabNavigation<T extends string>({
   onTabChange,
 }: TabNavigationProps<T>) {
   return (
-    <nav className="bg-gray-100 dark:bg-dark-200/50 border-b border-gray-200 dark:border-slate-700 transition-colors">
+    <nav className="sticky top-[73px] z-30 bg-gray-100/95 dark:bg-dark-200/95 backdrop-blur-sm border-b border-gray-200 dark:border-slate-700 transition-colors">
       <div className="flex">
         {tabs.map((tab) => (
           <button
