@@ -3,6 +3,7 @@
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getTranslation } from '../i18n';
 
 // Sound URLs (using embedded base64)
 const SOUNDS = {
@@ -46,7 +47,7 @@ export const useSoundStore = create<SoundState>()(
           audio.volume = volume;
           await audio.play();
         } catch (error) {
-          console.warn('[Sound] Failed to play sound:', error);
+          console.warn(getTranslation('errors.playingSound'), error);
         }
       },
 

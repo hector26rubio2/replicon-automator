@@ -52,12 +52,9 @@ export function UpdateChecker() {
   }, [state, showToast, t]);
 
   const handleCheckUpdates = useCallback(async () => {
-    console.log('[UpdateChecker] Button clicked, checking for updates...');
     setState('checking');
     try {
-      console.log('[UpdateChecker] Calling electronAPI.checkForUpdates()...');
       const result = await window.electronAPI.checkForUpdates();
-      console.log('[UpdateChecker] Result:', result);
       if (result.updateAvailable && result.version) {
         setState('available');
         setNewVersion(result.version);
@@ -66,8 +63,7 @@ export function UpdateChecker() {
         setState('idle');
         showToast('success', t('updates.upToDate'));
       }
-    } catch (error) {
-      console.error('[UpdateChecker] Error:', error);
+    } catch {
       setState('idle');
       showToast('error', t('updates.error'));
     }

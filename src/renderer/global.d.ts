@@ -59,6 +59,9 @@ declare global {
       onShortcutToggleLanguage: (callback: () => void) => () => void;
       onShortcutGoToTab: (callback: (tab: number) => void) => () => void;
       onShortcutShowShortcuts: (callback: () => void) => () => void;
+
+      // Dev logs (solo en desarrollo)
+      onMainLog?: (callback: (log: { level: string; message: string }) => void) => () => void;
     };
   }
 }
@@ -84,6 +87,17 @@ interface ScheduledTask {
   accountIds: string[];
   lastRun?: string;
   nextRun?: string;
+}
+
+// Vite env
+interface ImportMetaEnv {
+  readonly DEV: boolean;
+  readonly PROD: boolean;
+  readonly MODE: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }
 
 export {};

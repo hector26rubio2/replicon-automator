@@ -351,6 +351,21 @@ export const translations = {
       },
     },
 
+    // Dev Logs (Development only)
+    devLogs: {
+      title: 'Dev Logs',
+      entries: 'entries',
+      noLogs: 'No logs yet...',
+      clear: 'Clear logs',
+      filters: {
+        all: 'All',
+        errors: 'Errors',
+        warnings: 'Warnings',
+        info: 'Info',
+        debug: 'Debug',
+      },
+    },
+
     // Dashboard
     dashboard: {
       title: 'Dashboard',
@@ -410,6 +425,15 @@ export const translations = {
       viewDetails: 'View technical details',
       retry: 'Retry',
       reloadApp: 'Reload App',
+      loadingTasks: 'Error loading tasks',
+      savingTask: 'Error saving task',
+      deletingTask: 'Error deleting task',
+      togglingTask: 'Error toggling task',
+      runningTask: 'Error running task',
+      loadingConfig: 'Error loading configuration',
+      notificationsNotSupported: 'Notifications not supported',
+      showingNotification: 'Failed to show notification',
+      playingSound: 'Failed to play sound',
     },
 
     // CSV Editor Extended
@@ -921,6 +945,21 @@ export const translations = {
       },
     },
 
+    // Dev Logs (Development only)
+    devLogs: {
+      title: 'Logs de Desarrollo',
+      entries: 'entradas',
+      noLogs: 'Sin registros aún...',
+      clear: 'Limpiar logs',
+      filters: {
+        all: 'Todos',
+        errors: 'Errores',
+        warnings: 'Advertencias',
+        info: 'Info',
+        debug: 'Debug',
+      },
+    },
+
     // Dashboard
     dashboard: {
       title: 'Panel de Control',
@@ -980,6 +1019,15 @@ export const translations = {
       viewDetails: 'Ver detalles técnicos',
       retry: 'Reintentar',
       reloadApp: 'Recargar App',
+      loadingTasks: 'Error al cargar tareas',
+      savingTask: 'Error al guardar tarea',
+      deletingTask: 'Error al eliminar tarea',
+      togglingTask: 'Error al cambiar estado de tarea',
+      runningTask: 'Error al ejecutar tarea',
+      loadingConfig: 'Error al cargar configuración',
+      notificationsNotSupported: 'Notificaciones no soportadas',
+      showingNotification: 'Error al mostrar notificación',
+      playingSound: 'Error al reproducir sonido',
     },
 
     // CSV Editor Extended

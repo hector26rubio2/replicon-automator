@@ -6,6 +6,9 @@ import { app, BrowserWindow } from 'electron';
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { createLogger } from '../utils';
+
+const logger = createLogger('Screenshot');
 
 const SCREENSHOTS_DIR = path.join(app.getPath('userData'), 'screenshots');
 
@@ -35,13 +38,13 @@ export async function captureErrorScreenshot(
 
     if (page) {
       await page.screenshot({ path: filepath, fullPage: true });
-      console.log(`[Screenshot] Captured: ${filepath}`);
+      logger.info(`Captured: ${filepath}`);
       return filepath;
     }
 
     return null;
   } catch (error) {
-    console.error('[Screenshot] Failed to capture:', error);
+    logger.error('Failed to capture:', error);
     return null;
   }
 }
@@ -66,10 +69,10 @@ export async function captureWindowScreenshot(
     const image = await window.webContents.capturePage();
     await writeFile(filepath, image.toPNG());
     
-    console.log(`[Screenshot] Window captured: ${filepath}`);
+    logger.info(`Window captured: ${filepath}`);
     return filepath;
   } catch (error) {
-    console.error('[Screenshot] Failed to capture window:', error);
+    logger.error('Failed to capture window:', error);
     return null;
   }
 }
@@ -109,9 +112,9 @@ export async function cleanOldScreenshots(keepCount: number = 20): Promise<void>
     await Promise.all(toDelete.map((s) => unlink(s.path)));
     
     if (toDelete.length > 0) {
-      console.log(`[Screenshot] Cleaned ${toDelete.length} old screenshots`);
+      logger.info(`Cleaned ${toDelete.length} old screenshots`);
     }
   } catch (error) {
-    console.error('[Screenshot] Failed to clean old screenshots:', error);
+    logger.error('Failed to clean old screenshots:', error);
   }
 }

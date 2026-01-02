@@ -1,6 +1,7 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, app } from 'electron';
 
 let mainWindow: BrowserWindow | null = null;
+let isSetup = false;
 
 export function setMainWindowForLogs(window: BrowserWindow | null) {
   mainWindow = window;
@@ -8,7 +9,11 @@ export function setMainWindowForLogs(window: BrowserWindow | null) {
 
 function sendLogToRenderer(level: string, message: string) {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('main:log', { level, message });
+    try {
+      mainWindow.webContents.send('main:log', { level, message });
+    } catch {
+      // Window may be closing
+    }
   }
 }
 
@@ -22,8 +27,11 @@ const originalConsole = {
 };
 
 export function setupDevLogger() {
-  const isDev = process.env.NODE_ENV === 'development';
-  if (!isDev) return;
+  // Usar app.isPackaged para detectar correctamente si estamos en desarrollo
+  const isDev = !app.isPackaged;
+  
+  if (!isDev || isSetup) return;
+  isSetup = true;
 
   console.log = (...args: unknown[]) => {
     originalConsole.log(...args);

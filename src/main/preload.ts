@@ -103,6 +103,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('shortcut:show-shortcuts', () => callback());
     return () => ipcRenderer.removeAllListeners('shortcut:show-shortcuts');
   },
+
+  // Dev logs (solo en desarrollo)
+  onMainLog: (callback: (log: { level: string; message: string }) => void) => {
+    ipcRenderer.on('main:log', (_, log) => callback(log));
+    return () => ipcRenderer.removeAllListeners('main:log');
+  },
 });
 
 // Tipos para TypeScript en el renderer
@@ -146,6 +152,7 @@ declare global {
       onShortcutToggleLanguage: (callback: () => void) => () => void;
       onShortcutGoToTab: (callback: (tab: number) => void) => () => void;
       onShortcutShowShortcuts: (callback: () => void) => () => void;
+      onMainLog?: (callback: (log: { level: string; message: string }) => void) => () => void;
     };
   }
 }

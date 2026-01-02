@@ -77,7 +77,7 @@ export async function withNetworkRetry<T>(
     retryCondition: isRetryableError,
     onRetry: (attempt, error, delay) => {
       onRetry?.(attempt, error);
-      console.log(`Retry ${attempt}/${maxAttempts} en ${delay}ms...`);
+      // Log silencioso - el callback onRetry se encarga de notificar
     },
   });
 }

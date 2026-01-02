@@ -19,7 +19,8 @@
     "paths": {
       "@/*": ["src/renderer/*"],
       "@shared/*": ["src/shared/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
   "include": ["src/renderer/**/*", "src/shared/**/*"],
   "exclude": ["dist", "node_modules"]

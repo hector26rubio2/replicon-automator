@@ -5,6 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { logAudit } from './audit-logger.service';
+import { createLogger } from '../utils';
+
+const logger = createLogger('Scheduler');
 
 export interface ScheduledTask {
   id: string;
@@ -48,7 +51,7 @@ class SchedulerService {
         return JSON.parse(data);
       }
     } catch (error) {
-      console.error('[Scheduler] Error loading config:', error);
+      logger.error('Error loading config:', error);
     }
     return { tasks: [], enabled: true };
   }
@@ -57,7 +60,7 @@ class SchedulerService {
     try {
       fs.writeFileSync(this.configPath, JSON.stringify(this.config, null, 2), 'utf-8');
     } catch (error) {
-      console.error('[Scheduler] Error saving config:', error);
+      logger.error('Error saving config:', error);
     }
   }
 
@@ -78,7 +81,7 @@ class SchedulerService {
     // Initial check
     this.checkScheduledTasks();
     
-    console.log('[Scheduler] Service started');
+    logger.info('Service started');
   }
 
   stop(): void {
@@ -91,7 +94,7 @@ class SchedulerService {
     this.timers.forEach(timer => clearTimeout(timer));
     this.timers.clear();
 
-    console.log('[Scheduler] Service stopped');
+    logger.info('Service stopped');
   }
 
   private checkScheduledTasks(): void {
@@ -182,7 +185,7 @@ class SchedulerService {
   }
 
   private async executeTask(task: ScheduledTask): Promise<void> {
-    console.log(`[Scheduler] Executing task: ${task.name}`);
+    logger.info(`Executing task: ${task.name}`);
     
     logAudit('AUTOMATION_START', {
       source: 'scheduler',

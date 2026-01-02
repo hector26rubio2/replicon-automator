@@ -3,7 +3,7 @@
  * Extracted from SchedulerTab for cleaner separation of concerns
  */
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from '@/i18n';
+import { useTranslation, getTranslation } from '@/i18n';
 
 export interface ScheduledTask {
   id: string;
@@ -81,7 +81,7 @@ export function useScheduler(): UseSchedulerReturn {
         setTasks(result);
       }
     } catch (error) {
-      console.error('Error loading tasks:', error);
+      console.error(getTranslation('errors.loadingTasks'), error);
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +123,7 @@ export function useScheduler(): UseSchedulerReturn {
       setIsEditing(false);
       setEditingTask(null);
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error(getTranslation('errors.savingTask'), error);
     }
   }, [editingTask, loadTasks]);
 
@@ -134,7 +134,7 @@ export function useScheduler(): UseSchedulerReturn {
       await window.electronAPI?.deleteScheduledTask?.(id);
       await loadTasks();
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error(getTranslation('errors.deletingTask'), error);
     }
   }, [loadTasks, t]);
 
@@ -143,7 +143,7 @@ export function useScheduler(): UseSchedulerReturn {
       await window.electronAPI?.toggleScheduledTask?.(id);
       await loadTasks();
     } catch (error) {
-      console.error('Error toggling task:', error);
+      console.error(getTranslation('errors.togglingTask'), error);
     }
   }, [loadTasks]);
 
@@ -151,7 +151,7 @@ export function useScheduler(): UseSchedulerReturn {
     try {
       await window.electronAPI?.runScheduledTaskNow?.(id);
     } catch (error) {
-      console.error('Error running task:', error);
+      console.error(getTranslation('errors.runningTask'), error);
     }
   }, []);
 

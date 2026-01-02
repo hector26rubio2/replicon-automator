@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { TimeSlot, AccountMappings, AppConfig } from '../../shared/types';
 import { DEFAULT_HORARIOS, DEFAULT_CONFIG, DEFAULT_MAPPINGS } from '../../shared/constants';
+import { getTranslation } from '../i18n';
 
 export function useConfig() {
   const [horarios, setHorariosState] = useState<TimeSlot[]>(DEFAULT_HORARIOS);
@@ -26,7 +27,7 @@ export function useConfig() {
           setAppConfigState(savedAppConfig as AppConfig);
         }
       } catch (error) {
-        console.error('Error loading config:', error);
+        console.error(getTranslation('errors.loadingConfig'), error);
       }
     };
 

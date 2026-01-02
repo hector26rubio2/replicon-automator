@@ -3,7 +3,7 @@
  * Electron application bootstrap
  */
 
-import { app, BrowserWindow, nativeImage } from 'electron';
+import { app, BrowserWindow, nativeImage, Menu } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import Store from 'electron-store';
@@ -11,6 +11,7 @@ import { PlaywrightAutomation } from './services';
 import { setupIPCHandlers, setupGlobalShortcuts, unregisterAllShortcuts } from './controllers';
 import { closeBrowser } from './services/automation-enhanced.service';
 import { DEFAULT_CONFIG, DEFAULT_MAPPINGS, DEFAULT_HORARIOS } from '../shared/constants';
+import { setupDevLogger, setMainWindowForLogs } from './utils/dev-logger';
 
 // ═══════════════════════════════════════════════════════════
 // APPLICATION STATE
@@ -60,12 +61,19 @@ function createWindow(): void {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      devTools: isDev, // Deshabilitar DevTools en producción
     },
     icon: appIcon || iconPath,
     titleBarStyle: 'default',
     show: false,
     backgroundColor: '#0f172a',
+    autoHideMenuBar: !isDev, // Ocultar menú en producción
   });
+
+  // Eliminar menú completamente en producción
+  if (!isDev) {
+    Menu.setApplicationMenu(null);
+  }
 
   if (process.platform === 'win32' && appIcon) {
     app.setAppUserModelId('com.hdrt.replicon-automator');
@@ -83,6 +91,7 @@ function createWindow(): void {
   });
 
   mainWindow.on('closed', () => {
+    setMainWindowForLogs(null);
     mainWindow = null;
   });
 }
@@ -92,7 +101,15 @@ function createWindow(): void {
 // ═══════════════════════════════════════════════════════════
 
 app.whenReady().then(() => {
+  // Configurar logger de desarrollo
+  setupDevLogger();
+  
   createWindow();
+  
+  // Conectar ventana para logs de desarrollo
+  if (isDev && mainWindow) {
+    setMainWindowForLogs(mainWindow);
+  }
   
   setupIPCHandlers({
     store,

@@ -4,6 +4,9 @@
 
 import { safeStorage } from 'electron';
 import Store from 'electron-store';
+import { createLogger } from '../utils';
+
+const logger = createLogger('SecureCredentials');
 
 interface EncryptedCredentials {
   username: string; // Encrypted
@@ -27,7 +30,7 @@ export function isEncryptionAvailable(): boolean {
 export function saveSecureCredentials(username: string, password: string): boolean {
   try {
     if (!isEncryptionAvailable()) {
-      console.warn('Encryption not available, falling back to plain storage');
+      logger.warn('Encryption not available, falling back to plain storage');
       store.set('encryptedCreds', { username, password });
       return true;
     }
@@ -42,7 +45,7 @@ export function saveSecureCredentials(username: string, password: string): boole
 
     return true;
   } catch (error) {
-    console.error('Failed to save secure credentials:', error);
+    logger.error('Failed to save secure credentials:', error);
     return false;
   }
 }
@@ -68,7 +71,7 @@ export function loadSecureCredentials(): { username: string; password: string } 
 
     return { username, password };
   } catch (error) {
-    console.error('Failed to load secure credentials:', error);
+    logger.error('Failed to load secure credentials:', error);
     return null;
   }
 }

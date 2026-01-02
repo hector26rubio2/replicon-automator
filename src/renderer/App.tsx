@@ -9,6 +9,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageSelectorCompact } from './components/LanguageSelector';
 import { UpdateChecker } from './components/UpdateChecker';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
+import { DevLogs } from './components/DevLogs';
 import { useAutomation } from './hooks/useAutomation';
 import { useCSV } from './hooks/useCSV';
 import { useConfig } from './hooks/useConfig';
@@ -129,6 +130,7 @@ export default function App() {
         </div>
       </footer>
       <ShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <DevLogs />
     </div>
   );
 }

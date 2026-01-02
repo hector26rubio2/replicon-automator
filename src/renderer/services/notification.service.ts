@@ -2,6 +2,8 @@
  * Notification Service - System notifications for automation events
  */
 
+import { getTranslation } from '../i18n';
+
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
 interface NotificationOptions {
@@ -22,7 +24,7 @@ class NotificationService {
 
   async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
-      console.warn('Notifications not supported');
+      console.warn(getTranslation('errors.notificationsNotSupported'));
       return false;
     }
 
@@ -86,7 +88,7 @@ class NotificationService {
 
       return notification;
     } catch (error) {
-      console.error('Failed to show notification:', error);
+      console.error(getTranslation('errors.showingNotification'), error);
       return null;
     }
   }

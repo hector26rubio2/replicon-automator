@@ -228,15 +228,11 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
   ipcMain.handle('app:version', () => appVersion);
 
   ipcMain.handle('app:check-updates', async () => {
-    console.log('[IPC] app:check-updates called');
     try {
       const { updaterService } = await import('../services/updater.service');
-      console.log('[IPC] updaterService imported, calling checkForUpdates...');
       const result = await updaterService.checkForUpdates();
-      console.log('[IPC] checkForUpdates result:', result);
       return result;
-    } catch (error) {
-      console.error('[IPC] checkForUpdates error:', error);
+    } catch {
       return { updateAvailable: false, version: appVersion };
     }
   });
