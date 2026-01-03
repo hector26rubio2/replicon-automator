@@ -118,35 +118,38 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-installer
-          path: .
+          path: release
       
       - name: List downloaded files
         run: |
           echo "=== Downloaded files ==="
-          find . -type f -name "*.exe" -o -name "*.yml" -o -name "*.blockmap" -o -name "*.txt"
-          echo "=== Directory structure ==="
-          ls -la
-          ls -la release/ || echo "No release folder"
+          ls -lah release/
+          find release/ -type f
       
       - name: Read release notes
         id: notes
         run: |
-          if [ -f release_notes.txt ]; then
+          if [ -f release/release_notes.txt ]; then
             echo "notes<<EOF" >> $GITHUB_OUTPUT
-            cat release_notes.txt >> $GITHUB_OUTPUT
+            cat release/release_notes.txt >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "notes=Release v${{ needs.build.outputs.version }}" >> $GITHUB_OUTPUT
           fi
       
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: Replicon Automator v${{ needs.build.outputs.version }}
           body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false
           files: |
             release/*.exe
             release/*.blockmap
+            release/latest.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             release/*.yml
           draft: false
           prerelease: false
