@@ -1,16 +1,17 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright';
-import type { 
-  Credentials, 
-  CSVRow, 
-  TimeSlot, 
-  AccountMappings, 
+import type {
+  Credentials,
+  CSVRow,
+  TimeSlot,
+  AccountMappings,
   TimeEntry,
   AutomationProgress,
   LogEntry,
-  AppConfig 
+  AppConfig
 } from '../../common/types';
 import { militaryToStandard, delay } from '../../common/utils';
 import { SPECIAL_ACCOUNTS, PLAYWRIGHT_TIMEOUTS } from '../../common/constants';
+import { getChromiumLaunchOptions } from '../utils';
 
 // === SELECTORES REUTILIZABLES ===
 const SELECTORS = {
@@ -147,10 +148,12 @@ export class PlaywrightAutomation {
   }
 
   private async setupBrowser(): Promise<void> {
-    this.browser = await chromium.launch({
-      headless: this.config.headless,
-      slowMo: PLAYWRIGHT_TIMEOUTS.SLOW_MO, 
-    });
+    this.browser = await chromium.launch(
+      getChromiumLaunchOptions({
+        headless: this.config.headless,
+        slowMo: PLAYWRIGHT_TIMEOUTS.SLOW_MO,
+      })
+    );
 
     this.context = await this.browser.newContext({
       viewport: { width: 1920, height: 1080 },
@@ -174,14 +177,14 @@ export class PlaywrightAutomation {
     // Esperar y llenar email - XPath exacto del código Python
     await this.page.waitForSelector('input[name="identifier"]', { timeout: PLAYWRIGHT_TIMEOUTS.ELEMENT });
     await this.page.fill('input[name="identifier"]', credentials.email);
-    
+
     // Click en siguiente
     await this.page.click('input[type="submit"]');
-    
+
     // Esperar campo de password
     await this.page.waitForSelector('input[type="password"]', { state: 'visible', timeout: PLAYWRIGHT_TIMEOUTS.ELEMENT });
     await this.page.fill('input[type="password"]', credentials.password);
-    
+
     // Click en login
     await this.page.click('input[type="submit"]');
 
@@ -190,11 +193,11 @@ export class PlaywrightAutomation {
       // Buscar botón de Okta Verify push - basado en el XPath del Python
       const mfaSelector = '[data-se="okta_verify-push"], .authenticator-verify-list button, div[data-se="authenticator-button"]';
       const mfaButton = await this.page.waitForSelector(mfaSelector, { timeout: PLAYWRIGHT_TIMEOUTS.MFA_CHECK });
-      
+
       if (mfaButton) {
         this.log('info', '📱 Verificación MFA detectada, enviando push...');
         await mfaButton.click();
-        
+
         // Esperar a que se complete la verificación MFA (hasta 60 segundos)
         this.log('info', '⏳ Esperando aprobación de MFA...');
         await this.page.waitForURL(/.*\/app\/UserHome.*|.*replicon.*/i, { timeout: PLAYWRIGHT_TIMEOUTS.AUTH });
@@ -206,7 +209,7 @@ export class PlaywrightAutomation {
 
     // Esperar a que cargue el UserHome de Okta
     await this.page.waitForSelector('#main-content', { timeout: PLAYWRIGHT_TIMEOUTS.AUTH });
-    
+
     // Buscar y hacer clic en el enlace de Replicon
     this.log('info', '🔗 Buscando aplicación Replicon...');
     await this.clickWithSelectors(SELECTORS.REPLICON_LINK);
@@ -231,15 +234,15 @@ export class PlaywrightAutomation {
 
         const checkPages = async () => {
           const pages = context.pages();
-          
+
           for (const page of pages) {
             try {
               // Esperar a que la página cargue
-              await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
-              
+              await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => { });
+
               const url = page.url();
               this.log('info', `📄 Página cargada: ${url}`);
-              
+
               if (/replicon/i.test(url)) {
                 resolve(page);
                 return;
@@ -258,10 +261,10 @@ export class PlaywrightAutomation {
           try {
             this.log('info', '🆕 Nueva ventana detectada, esperando a que cargue...');
             await newPage.waitForLoadState('domcontentloaded', { timeout: 60000 });
-            
+
             const url = newPage.url();
             this.log('info', `📄 Nueva página cargada: ${url}`);
-            
+
             if (/replicon/i.test(url)) {
               context.off('page', onNewPage);
               resolve(newPage);
@@ -278,20 +281,20 @@ export class PlaywrightAutomation {
     };
 
     const repliconPage = await waitForRepliconPage();
-    
+
     // Esperar a que Replicon cargue completamente
     this.log('info', '⏳ Esperando que Replicon cargue completamente...');
-    await repliconPage.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => {});
-    
+    await repliconPage.waitForLoadState('networkidle', { timeout: 60000 }).catch(() => { });
+
     // Cerrar todas las otras ventanas
     const allPages = this.context.pages();
     for (const page of allPages) {
       if (page !== repliconPage) {
         this.log('info', `🗑️ Cerrando ventana: ${page.url()}`);
-        await page.close().catch(() => {});
+        await page.close().catch(() => { });
       }
     }
-    
+
     this.page = repliconPage;
     this.log('info', '✅ Conectado a Replicon');
   }
@@ -439,15 +442,15 @@ export class PlaywrightAutomation {
 
     // === GUARDAR ENTRADA ===
     await this.page.click(SELECTORS.OK_BUTTON);
-    await this.page.waitForSelector('.contextPopupNode', { state: 'hidden', timeout: 10000 }).catch(() => {});
+    await this.page.waitForSelector('.contextPopupNode', { state: 'hidden', timeout: 10000 }).catch(() => { });
 
     // === HORA DE FIN (CHECKOUT) ===
     await this.clickWithSelectors(SELECTORS.CHECKOUT);
     await this.fillWithSelectors(SELECTORS.TIME_INPUT, entry.end_time);
-    
+
     // === GUARDAR SALIDA ===
     await this.page.click(SELECTORS.OK_BUTTON);
-    await this.page.waitForSelector('.contextPopupNode', { state: 'hidden', timeout: 10000 }).catch(() => {});
+    await this.page.waitForSelector('.contextPopupNode', { state: 'hidden', timeout: 10000 }).catch(() => { });
   }
 
   /**
@@ -525,11 +528,11 @@ export class PlaywrightAutomation {
       const extras = row.extras?.trim() || '';
       const dailyEntries: TimeEntry[] = [];
 
-      const isSpecialAccount = SPECIAL_ACCOUNTS.VACATION.includes(cuenta) || 
-          SPECIAL_ACCOUNTS.NO_WORK.includes(cuenta) ||
-          SPECIAL_ACCOUNTS.WEEKEND.includes(cuenta);
+      const isSpecialAccount = SPECIAL_ACCOUNTS.VACATION.includes(cuenta) ||
+        SPECIAL_ACCOUNTS.NO_WORK.includes(cuenta) ||
+        SPECIAL_ACCOUNTS.WEEKEND.includes(cuenta);
       const isNoData = cuenta === 'ND' && proyecto === 'ND';
-      
+
       if (!isSpecialAccount && !isNoData) {
         const mapping = mappings[cuenta];
         if (mapping && mapping.name !== 'No work' && mapping.name !== 'Vacation') {
@@ -576,7 +579,7 @@ export class PlaywrightAutomation {
 
       const [cuenta, proyecto, startMilitary, endMilitary] = components;
       const mapping = mappings[cuenta.trim()];
-      
+
       if (!mapping) continue;
 
       entries.push({

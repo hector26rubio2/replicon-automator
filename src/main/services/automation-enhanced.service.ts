@@ -1,5 +1,5 @@
 import { chromium, Browser } from 'playwright';
-import { createLogger } from '../utils';
+import { createLogger, getChromiumLaunchOptions } from '../utils';
 const logger = createLogger('AutomationEnhanced');
 let preloadedBrowser: Browser | null = null;
 let preloadPromise: Promise<void> | null = null;
@@ -9,7 +9,7 @@ export interface AutomationCheckpoint {
   currentDay: number;
   totalDays: number;
   completedEntries: number[];
-  csvData: string; 
+  csvData: string;
   status: 'in-progress' | 'paused' | 'error';
   errorMessage?: string;
   lastSuccessfulDay?: number;
@@ -25,7 +25,7 @@ export interface DryRunResult {
   entriesPerDay: { day: number; count: number; entries: string[] }[];
   warnings: string[];
   errors: string[];
-  estimatedDuration: number; 
+  estimatedDuration: number;
 }
 export interface ValidationResult {
   isValid: boolean;
@@ -44,10 +44,12 @@ export async function preloadBrowser(headless: boolean = true): Promise<void> {
   preloadPromise = (async () => {
     try {
       logger.info('Preloading browser...');
-      preloadedBrowser = await chromium.launch({
-        headless,
-        slowMo: 50,
-      });
+      preloadedBrowser = await chromium.launch(
+        getChromiumLaunchOptions({
+          headless,
+          slowMo: 50,
+        })
+      );
       logger.info('Browser preloaded successfully');
     } catch (error) {
       logger.error('Failed to preload browser', error);
@@ -61,18 +63,20 @@ export async function preloadBrowser(headless: boolean = true): Promise<void> {
 export async function getBrowser(headless: boolean = true): Promise<Browser> {
   if (preloadedBrowser) {
     const browser = preloadedBrowser;
-    preloadedBrowser = null; 
+    preloadedBrowser = null;
     setTimeout(() => preloadBrowser(headless), 100);
     return browser;
   }
-  return chromium.launch({
-    headless,
-    slowMo: 50,
-  });
+  return chromium.launch(
+    getChromiumLaunchOptions({
+      headless,
+      slowMo: 50,
+    })
+  );
 }
 export async function closeBrowser(): Promise<void> {
   if (preloadedBrowser) {
-    await preloadedBrowser.close().catch(() => {});
+    await preloadedBrowser.close().catch(() => { });
     preloadedBrowser = null;
   }
 }

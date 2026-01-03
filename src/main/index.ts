@@ -12,8 +12,38 @@ import { setupDevLogger, setMainWindowForLogs } from './utils/dev-logger';
 
 // Cargar variables de entorno según el ambiente
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-const envFile = isDev ? '.env.development' : '.env.production';
-dotenv.config({ path: path.join(process.cwd(), envFile) });
+
+if (isDev) {
+  const envFile = '.env.development';
+  const envPath = path.join(process.cwd(), envFile);
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    console.log(`✅ Loaded env from: ${envPath}`);
+  }
+} else {
+  // En producción, el .env.production está en el mismo directorio que el .exe
+  const envFile = '.env.production';
+  const appDir = path.dirname(process.resourcesPath);
+  const envPath = path.join(appDir, envFile);
+
+  if (fs.existsSync(envPath)) {
+    try {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const envVars = envContent.split('\n').reduce((acc, line) => {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) return acc;
+        const match = trimmed.match(/^([^=]+)=(.*)$/);
+        if (match) {
+          acc[match[1].trim()] = match[2].trim();
+        }
+        return acc;
+      }, {} as Record<string, string>);
+      Object.assign(process.env, envVars);
+    } catch (error) {
+      // Error silencioso, las variables se tomarán de los defaults si existen
+    }
+  }
+}
 
 // Configuración por defecto con valores de .env
 const DEFAULT_CONFIG = {
@@ -36,7 +66,7 @@ const getMainWindow = () => mainWindow;
 const getAutomation = () => automation;
 const setAutomation = (instance: PlaywrightAutomation | null) => { automation = instance; };
 function createWindow(): void {
-  const iconPath = isDev 
+  const iconPath = isDev
     ? path.join(process.cwd(), 'assets', 'icon.ico')
     : path.join(__dirname, '..', '..', '..', 'assets', 'icon.ico');
   let appIcon;

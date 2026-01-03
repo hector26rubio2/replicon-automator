@@ -48,6 +48,7 @@ const translations = {
       generic: 'An error occurred',
       network: 'Network error',
       timeout: 'Operation timed out',
+      loginUrlMissing: 'Login URL is not configured. Please configure it in the Configuration tab.',
     },
   },
   es: {
@@ -96,6 +97,7 @@ const translations = {
       generic: 'Ocurrió un error',
       network: 'Error de red',
       timeout: 'La operación expiró',
+      loginUrlMissing: 'La URL de login no está configurada. Por favor configúrala en la pestaña de Configuración.',
     },
   },
 } as const;
@@ -124,7 +126,7 @@ export function t(keyPath: string, vars?: Record<string, string | number>): stri
         if (value && typeof value === 'object' && k in value) {
           value = value[k];
         } else {
-          return keyPath; 
+          return keyPath;
         }
       }
       break;

@@ -4,6 +4,7 @@ import { PlaywrightAutomation, CSVService } from '../services';
 import { CredentialsService } from '../services/credentials.service';
 import * as automationEnhanced from '../services/automation-enhanced.service';
 import { logToFile } from '../utils/dev-logger';
+import { t } from '../i18n';
 import type { CSVRow } from '../../common/types';
 interface IPCControllerDeps {
   store: Store<Record<string, unknown>>;
@@ -67,8 +68,24 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
     if (getAutomation()) {
       return { success: false, error: 'Ya hay una automatización en ejecución' };
     }
+
+    // Validar configuración - tomar de .env si está vacío
+    const config = {
+      ...request.config,
+      loginUrl: request.config.loginUrl || process.env.REPLICON_LOGIN_URL || '',
+      timeout: request.config.timeout || Number(process.env.REPLICON_TIMEOUT) || 45000,
+    };
+
+    // Validar que loginUrl no esté vacío
+    if (!config.loginUrl || config.loginUrl.trim() === '') {
+      return {
+        success: false,
+        error: t('errors.loginUrlMissing')
+      };
+    }
+
     const automation = new PlaywrightAutomation(
-      request.config,
+      config,
       (progress) => mainWindow?.webContents.send('automation:progress', progress),
       (log) => mainWindow?.webContents.send('automation:log', log)
     );

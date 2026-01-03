@@ -12,8 +12,11 @@
     "build": "npm run build:renderer && npm run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc -p tsconfig.main.json && tsc-alias -p tsconfig.main.json",
-    "dist": "npm run build && electron-builder",
-    "dist:win": "npm run build && electron-builder --win",
+    "postinstall": "npx playwright install chromium --with-deps",
+    "copy-playwright-bins": "node scripts/copy-playwright-bins.js",
+    "clean": "node scripts/prebuild-cleanup.js",
+    "dist": "npm run clean && npm run copy-playwright-bins && npm run build && electron-builder",
+    "dist:win": "npm run clean && npm run copy-playwright-bins && npm run build && electron-builder --win",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -74,7 +77,21 @@
       "dist/**/*",
       "package.json"
     ],
-    "extraResources": [],
+    "extraFiles": [
+      {
+        "from": ".env.production",
+        "to": ".env.production"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "playwright-bin",
+        "to": "playwright",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "electronLanguages": [
       "en",
       "es"
