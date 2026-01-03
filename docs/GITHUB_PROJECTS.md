@@ -30,6 +30,7 @@ gh project create --owner hector26rubio2 --title "Replicon Automator - Roadmap"
 ### 3️⃣ Automatizaciones Nativas (Sin Costo)
 
 #### Automatización 1: Auto-mover Issues
+
 ```yaml
 # Settings → Workflows → Enable "Item added to project"
 Cuando: Un issue se asigna a alguien
@@ -45,6 +46,7 @@ Acción: Mover a "Done"
 ```
 
 #### Automatización 2: Auto-cerrar Issues con PRs
+
 ```yaml
 # En tu PR description, usa:
 Closes #123
@@ -92,8 +94,8 @@ Crea: `.github/ISSUE_TEMPLATE/bug_report.yml`
 ```yaml
 name: 🐛 Bug Report
 description: Reportar un error en la aplicación
-title: "[BUG] "
-labels: ["type: bug"]
+title: '[BUG] '
+labels: ['type: bug']
 assignees:
   - hector26rubio2
 body:
@@ -101,16 +103,16 @@ body:
     attributes:
       value: |
         Gracias por reportar este bug. Por favor completa la información.
-  
+
   - type: input
     id: version
     attributes:
       label: Versión
       description: ¿Qué versión de Replicon Automator estás usando?
-      placeholder: "Ej: v3.5.0"
+      placeholder: 'Ej: v3.5.0'
     validations:
       required: true
-  
+
   - type: textarea
     id: description
     attributes:
@@ -119,7 +121,7 @@ body:
       placeholder: Describe el bug aquí...
     validations:
       required: true
-  
+
   - type: textarea
     id: steps
     attributes:
@@ -131,14 +133,14 @@ body:
         3. Ver error
     validations:
       required: true
-  
+
   - type: textarea
     id: logs
     attributes:
       label: Logs de la aplicación
       description: Si hay logs de error, pégalos aquí
       render: shell
-  
+
   - type: dropdown
     id: os
     attributes:

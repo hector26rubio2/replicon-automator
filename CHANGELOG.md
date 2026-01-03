@@ -6,11 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.1] - 2026-01-03
+
+### Fixed
+
+**Critical Packaging Fix**
+- Fixed Playwright binaries not being included in GitHub Release installers
+- Added `playwright-bin/**/*` to electron-builder `files` configuration
+- Added verification steps in CI/CD to ensure binaries are packaged correctly
+- Improved logging in playwright-config.ts for better debugging
+
+### Technical
+- Installers from GitHub Releases now correctly include Chromium binaries
+- Application will no longer throw "Chromium executable not found" error
+
 ## [3.6.0] - 2026-01-03
 
 ### Added
 
 **CI/CD Optimization - GitHub Free Tier**
+
 - Advanced caching system (node_modules, Playwright browsers, Wine installation)
 - Quick validation workflow for fast pre-build checks
 - Test coverage reporting with automatic PR comments
@@ -22,12 +37,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Comprehensive documentation for GitHub free tier optimization
 
 **Security Enhancements**
+
 - Multi-layer security policy (SECURITY.md)
 - Automated security audits in CI/CD pipeline
 - Branch protection guidelines
 - Secrets management best practices
 
 **Documentation**
+
 - GitHub Free Tier Optimization Guide (docs/GITHUB_FREE_OPTIMIZATION.md)
 - GitHub Projects Kanban Guide (docs/GITHUB_PROJECTS.md)
 - Step-by-step activation guide (docs/NEXT_STEPS.md)
@@ -36,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Performance
 
 **GitHub Actions Optimization**
+
 - Build time reduced from ~25 min to ~8 min (68% improvement)
 - Monthly Actions usage reduced from ~800 min to ~136 min (83% savings)
 - Conditional installations (skip if cache hit)
@@ -43,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Duplicate build cancellation
 
 **Resource Efficiency**
+
 - Estimated monthly cost savings: $50-100 vs paid alternatives
 - Cache hit rate: ~85%
 - Storage usage: ~200 MB / 500 MB (40% of limit)

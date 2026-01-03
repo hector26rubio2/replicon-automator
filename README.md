@@ -40,12 +40,12 @@
 
 ### Quick Stats
 
-| Métrica | Valor |
-|---------|-------|
-| CI/CD Build Time | ~8 min (70% optimizado) |
-| Monthly Actions Usage | ~136 min/2000 (7%) |
-| Cache Hit Rate | ~85% |
-| Free Features | Pages, CodeQL, Dependabot |
+| Métrica               | Valor                     |
+| --------------------- | ------------------------- |
+| CI/CD Build Time      | ~8 min (70% optimizado)   |
+| Monthly Actions Usage | ~136 min/2000 (7%)        |
+| Cache Hit Rate        | ~85%                      |
+| Free Features         | Pages, CodeQL, Dependabot |
 
 ### Requirements
 

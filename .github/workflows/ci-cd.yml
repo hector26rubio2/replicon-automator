@@ -133,12 +133,45 @@ jobs:
           fi
           echo "✅ Playwright binaries found:"
           ls -lah playwright-bin/
+          
+          # Verificar estructura interna
+          echo ""
+          echo "📂 Estructura de chromium:"
+          find playwright-bin -name "chrome.exe" -type f
       
       - name: Package application (Windows)
         run: npx electron-builder --win --x64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
+      
+      # CRÍTICO: Verificar que los binarios quedaron en el instalador
+      - name: Verify packaged resources
+        run: |
+          echo "📦 Verificando recursos empaquetados..."
+          
+          if [ -d "release/win-unpacked/resources" ]; then
+            echo "✅ Carpeta resources encontrada"
+            ls -lah release/win-unpacked/resources/
+            
+            if [ -d "release/win-unpacked/resources/playwright" ]; then
+              echo ""
+              echo "✅ Carpeta playwright encontrada en resources"
+              ls -lah release/win-unpacked/resources/playwright/
+              
+              echo ""
+              echo "📂 Buscando chrome.exe:"
+              find release/win-unpacked/resources/playwright -name "chrome.exe" -type f || echo "❌ chrome.exe NO encontrado"
+            else
+              echo "❌ ERROR: Carpeta playwright NO encontrada en resources"
+              echo "Contenido de resources:"
+              ls -lah release/win-unpacked/resources/
+              exit 1
+            fi
+          else
+            echo "❌ ERROR: Carpeta resources no encontrada"
+            exit 1
+          fi
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

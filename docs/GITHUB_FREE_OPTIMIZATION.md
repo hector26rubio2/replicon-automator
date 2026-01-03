@@ -1,4 +1,5 @@
 # 💎 GitHub Free Tier - Guía Maestra de Optimización
+
 ## Aprovecha al MÁXIMO los recursos gratuitos (Sin gastar un centavo)
 
 > **🎯 Objetivo:** Configurar un entorno DevOps profesional usando ÚNICAMENTE la capa gratuita de GitHub.
@@ -7,15 +8,15 @@
 
 ## 📊 RECURSOS GRATUITOS DISPONIBLES
 
-| Recurso | Límite Gratuito | Uso en este Proyecto |
-|---------|----------------|----------------------|
-| GitHub Actions | 2,000 min/mes | ~400 min/mes (optimizado) |
-| GitHub Packages | 500 MB storage | ~200 MB (caché npm) |
-| GitHub Pages | 1 GB/mes bandwidth | Docs + Coverage |
-| Git LFS | 1 GB storage | No usado |
-| Codespaces | 60 horas/mes | Desarrollo remoto |
-| Security Features | Ilimitado | CodeQL + Dependabot |
-| Projects | Ilimitado | Kanban completo |
+| Recurso           | Límite Gratuito    | Uso en este Proyecto      |
+| ----------------- | ------------------ | ------------------------- |
+| GitHub Actions    | 2,000 min/mes      | ~400 min/mes (optimizado) |
+| GitHub Packages   | 500 MB storage     | ~200 MB (caché npm)       |
+| GitHub Pages      | 1 GB/mes bandwidth | Docs + Coverage           |
+| Git LFS           | 1 GB storage       | No usado                  |
+| Codespaces        | 60 horas/mes       | Desarrollo remoto         |
+| Security Features | Ilimitado          | CodeQL + Dependabot       |
+| Projects          | Ilimitado          | Kanban completo           |
 
 ---
 
@@ -73,17 +74,18 @@ concurrency:
 
 ### 📉 Consumo de Minutos Estimado
 
-| Workflow | Sin Optimización | Con Optimización | Ahorro |
-|----------|-----------------|------------------|--------|
-| CI/CD (build completo) | ~25 min | ~8 min | 68% |
-| Quick Validation | N/A | ~2 min | - |
-| Coverage Report | ~10 min | ~3 min | 70% |
-| CodeQL | ~15 min | ~15 min* | - |
-| Docs Deployment | ~5 min | ~1 min | 80% |
+| Workflow               | Sin Optimización | Con Optimización | Ahorro |
+| ---------------------- | ---------------- | ---------------- | ------ |
+| CI/CD (build completo) | ~25 min          | ~8 min           | 68%    |
+| Quick Validation       | N/A              | ~2 min           | -      |
+| Coverage Report        | ~10 min          | ~3 min           | 70%    |
+| CodeQL                 | ~15 min          | ~15 min\*        | -      |
+| Docs Deployment        | ~5 min           | ~1 min           | 80%    |
 
-*CodeQL no consume minutos en repos públicos
+\*CodeQL no consume minutos en repos públicos
 
 **Total mensual:**
+
 - 4 releases/mes × 8 min = 32 min
 - 20 PRs/mes × 2 min (quick) = 40 min
 - 20 PRs/mes × 3 min (coverage) = 60 min
@@ -110,6 +112,7 @@ concurrency:
 ```
 
 **Ventajas:**
+
 - ✅ Restauración instantánea de node_modules
 - ✅ Compartido entre workflows
 - ✅ Solo ~50 MB por caché
@@ -126,6 +129,7 @@ concurrency:
 **URL del sitio:** `https://hector26rubio2.github.io/replicon-automator/`
 
 **Contenido alojado:**
+
 1. **Documentación** (`/`) - Generada desde README.md
 2. **Coverage Reports** (`/coverage/`) - Reportes de pruebas
 3. **Release Notes** - Historial de versiones
@@ -137,23 +141,25 @@ concurrency:
 - name: Generate documentation site
   run: |
     mkdir -p docs-site
-    
+
     # Convertir README a HTML (sin dependencias)
     python3 -c "
     import re
     # Markdown → HTML puro
     "
-    
+
     # Alojar en GitHub Pages (gratis, ilimitado para repos públicos)
 ```
 
 **Ventajas:**
+
 - ✅ SSL/HTTPS gratuito
 - ✅ CDN global (rápido en todo el mundo)
 - ✅ Sin límite de visitas en repos públicos
 - ✅ Actualización automática en cada push a `main`
 
 **Alternativas evaluadas:**
+
 - ❌ Netlify Free (100 GB/mes pero requiere cuenta externa)
 - ❌ Vercel Free (similar, pero más complejo)
 - ✅ **GitHub Pages** (nativo, simple, ilimitado)
@@ -165,23 +171,25 @@ concurrency:
 ### ✅ Protección Multi-Capa
 
 #### A. Dependabot (Actualizaciones Automáticas)
+
 ```yaml
 # 📁 .github/dependabot.yml
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: 'npm'
     schedule:
-      interval: "weekly"  # No daily (ahorra notificaciones)
+      interval: 'weekly' # No daily (ahorra notificaciones)
     groups:
       dependencies:
-        update-types: ["minor", "patch"]  # Agrupar PRs
-    open-pull-requests-limit: 5  # Máximo 5 PRs abiertos
+        update-types: ['minor', 'patch'] # Agrupar PRs
+    open-pull-requests-limit: 5 # Máximo 5 PRs abiertos
 ```
 
 **Ahorro:** ~15 PRs/mes → ~3 PRs/mes (agrupados)
 
 #### B. CodeQL (Análisis de Seguridad)
+
 ```yaml
 # 📁 .github/workflows/codeql.yml
 
@@ -190,9 +198,9 @@ updates:
 
 on:
   schedule:
-    - cron: '0 3 * * 1'  # Solo lunes (no diario)
+    - cron: '0 3 * * 1' # Solo lunes (no diario)
   push:
-    branches: [main]  # Solo en cambios importantes
+    branches: [main] # Solo en cambios importantes
 ```
 
 #### C. Branch Protection Rules
@@ -232,6 +240,7 @@ env:
 ```
 
 **NUNCA HARDCODEAR:**
+
 - ❌ API Keys
 - ❌ Tokens
 - ❌ Contraseñas
@@ -244,12 +253,14 @@ env:
 ### ✅ Uso Estratégico (60 horas/mes)
 
 **Cuándo usar Codespaces:**
+
 - ✅ Desarrollo desde laptop sin recursos
 - ✅ Testing en entorno limpio
 - ✅ Revisión rápida de PRs
 - ✅ Debugging de issues complejos
 
 **Cuándo NO usar:**
+
 - ❌ Desarrollo local habitual
 - ❌ Builds de producción (usa Actions)
 - ❌ Dejar abierto sin trabajar (consume horas)
@@ -262,21 +273,17 @@ env:
 {
   "name": "Replicon Automator Dev",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
-  
+
   // Pre-instalar extensiones
   "customizations": {
     "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "ms-playwright.playwright"
-      ]
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-playwright.playwright"]
     }
   },
-  
+
   // Comando post-creación
   "postCreateCommand": "npm install && npx playwright install chromium",
-  
+
   // Configuración de máquina (2 cores = mínimo, gratis)
   "hostRequirements": {
     "cpus": 2,
@@ -287,6 +294,7 @@ env:
 ```
 
 **Consumo estimado:**
+
 - 10 sesiones/mes × 3 horas/sesión = 30 horas (50% del límite)
 - Siempre cerrar Codespaces cuando no se usen
 
@@ -299,11 +307,13 @@ env:
 **Configuración:** Ver [`GITHUB_PROJECTS.md`](./GITHUB_PROJECTS.md)
 
 **Automatizaciones Nativas:**
+
 1. **Auto-mover Issues:** Asignado → In Progress
 2. **Auto-cerrar:** PR merged → Done
 3. **Auto-labels:** Dependabot → `dependencies` tag
 
 **Integraciones Gratuitas:**
+
 - ✅ GitHub Mobile (notificaciones push)
 - ✅ VS Code Extension (gestionar issues desde el editor)
 - ✅ Slack Free (notificaciones de PRs)
@@ -315,6 +325,7 @@ env:
 ### ✅ GitHub Insights (Gratis)
 
 **Métricas Disponibles:**
+
 - 📊 **Pulse:** Actividad semanal
 - 👥 **Contributors:** Quién contribuye
 - 📈 **Traffic:** Visitas al repo
@@ -340,10 +351,11 @@ env:
 ### ✅ DO's
 
 1. **Usa `act` localmente** para testing de workflows
+
    ```bash
    # Instalar act
    choco install act-cli
-   
+
    # Ejecutar workflow localmente (NO consume minutos de GitHub)
    act -j build
    ```
@@ -353,14 +365,15 @@ env:
 3. **Squash commits** antes de merge (menos runs de CI)
 
 4. **Scheduled workflows** solo cuando sea necesario
+
    ```yaml
    schedule:
-     - cron: '0 3 * * 1'  # Solo lunes, NO diario
+     - cron: '0 3 * * 1' # Solo lunes, NO diario
    ```
 
 5. **Fail-fast** para detener builds rápido
    ```yaml
-   timeout-minutes: 5  # Falla rápido si algo está mal
+   timeout-minutes: 5 # Falla rápido si algo está mal
    strategy:
      fail-fast: true
    ```
@@ -368,11 +381,12 @@ env:
 ### ❌ DON'Ts
 
 1. ❌ NO ejecutar workflows en cada commit (usa paths filters)
+
    ```yaml
    on:
      push:
        paths:
-         - 'src/**'  # Solo si cambió código fuente
+         - 'src/**' # Solo si cambió código fuente
    ```
 
 2. ❌ NO duplicar lógica entre workflows (usa composite actions)
@@ -403,11 +417,13 @@ Pages: No hay límite en repos públicos
 ## 🚀 ROADMAP DE OPTIMIZACIONES FUTURAS
 
 ### Q1 2025
+
 - [ ] Migrar a Self-hosted runners (gratis, minutos ilimitados)
 - [ ] Implementar Matrix builds (paralelizar tests)
 - [ ] Caché de Playwright binaries en GitHub Packages
 
 ### Q2 2025
+
 - [ ] GitHub Discussions para comunidad
 - [ ] GitHub Sponsors (monetización opcional)
 - [ ] Wiki para documentación avanzada

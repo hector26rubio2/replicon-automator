@@ -41,11 +41,17 @@ export function getChromiumExecutablePath(): string | undefined {
 
     // Buscar la carpeta chromium-* dinámicamente
     try {
+        logger.info(`Verificando si existe: ${playwrightPath}`);
+
         if (fs.existsSync(playwrightPath)) {
             const files = fs.readdirSync(playwrightPath);
+            logger.info(`Archivos en playwright: ${files.join(', ')}`);
+
             const chromiumFolder = files.find(f => f.startsWith('chromium-'));
 
             if (chromiumFolder) {
+                logger.info(`Carpeta chromium encontrada: ${chromiumFolder}`);
+
                 // Intentar primero chrome-win64 (versión nueva)
                 let chromePath = path.join(
                     playwrightPath,
@@ -53,6 +59,7 @@ export function getChromiumExecutablePath(): string | undefined {
                     'chrome-win64',
                     'chrome.exe'
                 );
+                logger.info(`Probando ruta: ${chromePath}`);
 
                 if (fs.existsSync(chromePath)) {
                     logger.info(`✅ Chromium encontrado en: ${chromePath}`);
@@ -66,12 +73,20 @@ export function getChromiumExecutablePath(): string | undefined {
                     'chrome-win',
                     'chrome.exe'
                 );
+                logger.info(`Probando ruta alternativa: ${chromePath}`);
 
                 if (fs.existsSync(chromePath)) {
                     logger.info(`✅ Chromium encontrado en: ${chromePath}`);
                     return chromePath;
                 }
+
+                logger.error(`❌ chrome.exe no encontrado en ninguna ubicación dentro de ${chromiumFolder}`);
+            } else {
+                logger.error(`❌ No se encontró carpeta chromium-* en ${playwrightPath}`);
             }
+        } else {
+            logger.error(`❌ La ruta playwright no existe: ${playwrightPath}`);
+            logger.error(`process.resourcesPath = ${resourcesPath}`);
         }
     } catch (error) {
         logger.error('Error buscando Chromium:', error);

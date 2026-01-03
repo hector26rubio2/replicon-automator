@@ -1,6 +1,6 @@
 {
   "name": "replicon-automator",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "Automatizador de Replicon - App de escritorio moderna con Electron + Playwright",
   "main": "dist/main/main/index.js",
   "author": "Hector David Rubio Tabares",
@@ -87,8 +87,10 @@
     "files": [
       "dist/**/*",
       "package.json",
+      "playwright-bin/**/*",
       "!dist/**/*.map",
-      "!dist/**/*.d.ts"
+      "!dist/**/*.d.ts",
+      "!playwright-bin/**/*.pdb"
     ],
     "extraFiles": [
       {
