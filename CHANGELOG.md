@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-01-03
+
+### Fixed
+- **CI/CD Pipeline**: Fixed Playwright installation in CI builds
+  - Use `npm ci` instead of `npm i` for reproducible builds
+  - Explicitly install Playwright chromium browser with `--with-deps`
+  - Execute `copy-playwright-bins` script before electron-builder
+  - Ensure Windows installer includes bundled Chromium browser
+
+### Technical
+- CI now properly installs and bundles Playwright browser binaries
+- Installer no longer requires end users to install Chromium separately
+
 ## [3.2.0] - 2026-01-03
 
 ### Added
