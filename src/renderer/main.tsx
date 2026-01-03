@@ -14,13 +14,24 @@ const showErrorOnScreen = (title: string, error: string) => {
     font-family: monospace; font-size: 14px; z-index: 99999;
     overflow: auto; white-space: pre-wrap;
   `;
-  errorDiv.innerHTML = `
-    <h1 style="color: #ff6b6b; margin-bottom: 20px;">🚨 ${title}</h1>
-    <pre style="background: #1a1a2e; padding: 15px; border-radius: 8px; overflow: auto;">${error}</pre>
-    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; cursor: pointer; background: #4ecdc4; border: none; border-radius: 5px;">
-      Reload App
-    </button>
-  `;
+
+  const heading = document.createElement('h1');
+  heading.style.cssText = 'color: #ff6b6b; margin-bottom: 20px;';
+  heading.textContent = `🚨 ${title}`;
+
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'background: #1a1a2e; padding: 15px; border-radius: 8px; overflow: auto;';
+  pre.textContent = error;
+
+  const button = document.createElement('button');
+  button.style.cssText =
+    'margin-top: 20px; padding: 10px 20px; cursor: pointer; background: #4ecdc4; border: none; border-radius: 5px;';
+  button.textContent = 'Reload App';
+  button.onclick = () => location.reload();
+
+  errorDiv.appendChild(heading);
+  errorDiv.appendChild(pre);
+  errorDiv.appendChild(button);
   document.body.appendChild(errorDiv);
 };
 const sendLog = (level: string, source: string, message: string) => {
@@ -28,21 +39,24 @@ const sendLog = (level: string, source: string, message: string) => {
     window.electronAPI?.sendLogToMain?.(level, source, message);
   } catch (e) {
     const err = e as Error;
-    console.error('[IPC Error] Failed to send log to main:', err);
-    showErrorOnScreen('IPC Error', `Failed to send log to main:\n${err.message}\n\nStack:\n${err.stack}`);
+    showErrorOnScreen(
+      'IPC Error',
+      `Failed to send log to main:\n${err.message}\n\nStack:\n${err.stack}`
+    );
   }
 };
 window.onerror = (message, source, lineno, colno, error) => {
-  const errorMsg = `${message}\n\nSource: ${source}\nLine: ${lineno}, Col: ${colno}\n\nStack:\n${error?.stack || 'No stack available'}`;
-  console.error(`[GLOBAL ERROR]`, errorMsg);
+  const errorMsg = `${message}\n\nSource: ${source}\nLine: ${lineno}, Col: ${colno}\n\nStack:\n${
+    error?.stack || 'No stack available'
+  }`;
   sendLog('ERROR', 'GlobalError', errorMsg);
   showErrorOnScreen('JavaScript Error', errorMsg);
   return false;
 };
 window.onunhandledrejection = (event) => {
-  const errorMsg = `Unhandled Promise Rejection\n\n${event.reason?.stack || event.reason?.message || String(event.reason)}`;
-  // eslint-disable-next-line no-console
-  console.error('[UNHANDLED REJECTION]', errorMsg);
+  const errorMsg = `Unhandled Promise Rejection\n\n${
+    event.reason?.stack || event.reason?.message || String(event.reason)
+  }`;
   sendLog('ERROR', 'UnhandledRejection', errorMsg);
   showErrorOnScreen('Unhandled Promise Rejection', errorMsg);
 };
@@ -51,13 +65,14 @@ console.log('[Renderer] Starting renderer process...');
 sendLog('INFO', 'Main', 'Starting renderer process');
 const initializeApp = () => {
   try {
-    // eslint-disable-next-line no-console
-    console.log('[Renderer] Initializing app...');
     sendLog('INFO', 'Main', 'Initializing app');
     const themeState = useThemeStore.getState();
-    const resolvedTheme = themeState.theme === 'system' 
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : themeState.theme;
+    const resolvedTheme =
+      themeState.theme === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        : themeState.theme;
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(resolvedTheme);
     document.documentElement.setAttribute('data-theme', resolvedTheme);
@@ -69,7 +84,6 @@ const initializeApp = () => {
   } catch (error) {
     const err = error as Error;
     const errorMsg = `Init Error: ${err.message}\n\nStack:\n${err.stack}`;
-    console.error('[INIT ERROR]', errorMsg);
     sendLog('ERROR', 'InitError', errorMsg);
     showErrorOnScreen('Initialization Error', errorMsg);
   }
@@ -90,7 +104,6 @@ try {
 } catch (error) {
   const err = error as Error;
   const errorMsg = `React Render Error: ${err.message}\n\nStack:\n${err.stack}`;
-  console.error('[RENDER ERROR]', errorMsg);
   sendLog('ERROR', 'RenderError', errorMsg);
   showErrorOnScreen('React Render Error', errorMsg);
 }

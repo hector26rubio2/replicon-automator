@@ -9,6 +9,7 @@ import { closeBrowser } from './services/automation-enhanced.service';
 import { updaterService } from './services/updater.service';
 import { DEFAULT_MAPPINGS, DEFAULT_HORARIOS } from '../common/constants';
 import { setupDevLogger, setMainWindowForLogs } from './utils/dev-logger';
+import { productionLogger } from './utils/production-logger';
 
 // Cargar variables de entorno según el ambiente
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -18,7 +19,7 @@ if (isDev) {
   const envPath = path.join(process.cwd(), envFile);
   if (fs.existsSync(envPath)) {
     dotenv.config({ path: envPath });
-    console.log(`✅ Loaded env from: ${envPath}`);
+    productionLogger.info('Environment loaded', { envPath });
   }
 } else {
   // En producción, el .env.production está en el mismo directorio que el .exe
@@ -109,8 +110,7 @@ function createWindow(): void {
   }
 
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    // eslint-disable-next-line no-console
-    console.error('[MainWindow] did-fail-load', { errorCode, errorDescription, validatedURL });
+    productionLogger.error('MainWindow did-fail-load', { errorCode, errorDescription, validatedURL });
     if (isDev) {
       mainWindow?.show();
       mainWindow?.webContents.openDevTools({ mode: 'bottom' });
@@ -118,8 +118,7 @@ function createWindow(): void {
   });
 
   mainWindow.webContents.on('render-process-gone', (_event, details) => {
-    // eslint-disable-next-line no-console
-    console.error('[MainWindow] render-process-gone', details);
+    productionLogger.error('MainWindow render-process-gone', details);
   });
 
   mainWindow.webContents.on('did-finish-load', () => {

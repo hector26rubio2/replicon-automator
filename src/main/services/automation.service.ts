@@ -99,6 +99,16 @@ export class PlaywrightAutomation {
     this.progressCallback(next);
   }
 
+  /**
+   * Inicia el proceso de automatización de registro de tiempo en Replicon
+   * @param credentials - Credenciales de Okta (email y password)
+   * @param csvData - Filas del CSV con datos de tiempo (cuenta, proyecto, extras)
+   * @param horarios - Franjas horarias para calcular duración de entradas
+   * @param mappings - Mapeos de cuentas y proyectos configurados
+   * @throws {Error} Si falla autenticación, navegación o registro de tiempo
+   * @example
+   * await automation.start(credentials, csvRows, timeSlots, accountMappings);
+   */
   async start(
     credentials: Credentials,
     csvData: CSVRow[],
@@ -130,12 +140,38 @@ export class PlaywrightAutomation {
     }
   }
 
+  /**
+   * Detiene la automatización en curso y limpia recursos
+   * Cierra el navegador y libera memoria. Seguro llamar múltiples veces.
+   * @example
+   * await automation.stop();
+   */
+  /**
+   * Detiene la automatización y limpia recursos del navegador
+   * Seguro llamar múltiples veces. Cierra browser/context/page.
+   * @example
+   * await automation.stop();
+   */
   async stop(): Promise<void> {
     this.isStopped = true;
     await this.cleanup();
     this.log('warning', '⚠️ Automatización detenida');
   }
 
+  /**
+   * Alterna entre pausa y reanudación de la automatización
+   * Útil para inspeccionar el estado del navegador sin detener completamente
+   * @example
+   * automation.togglePause(); // Pausa
+   * automation.togglePause(); // Reanuda
+   */
+  /**
+   * Alterna pausa/reanudación de la automatización en curso
+   * Útil para inspeccionar estado sin detener completamente
+   * @example
+   * automation.togglePause(); // Pausa
+   * automation.togglePause(); // Reanuda
+   */
   togglePause(): void {
     this.isPaused = !this.isPaused;
     this.log('info', this.isPaused ? '⏸️ Automatización pausada' : '▶️ Automatización reanudada');
@@ -594,27 +630,66 @@ export class PlaywrightAutomation {
   }
 
   /**
-   * Limpieza de recursos
+   * Limpieza de recursos con timeout de seguridad
    */
   private async cleanup(): Promise<void> {
+    const CLEANUP_TIMEOUT = 5000; // 5 segundos máximo para cleanup
+
+    // Helper para cleanup con timeout
+    const cleanupWithTimeout = async (
+      cleanupFn: () => Promise<void>,
+      resourceName: string
+    ): Promise<void> => {
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error(`${resourceName} cleanup timeout`)), CLEANUP_TIMEOUT);
+        });
+
+        await Promise.race([cleanupFn(), timeoutPromise]);
+      } catch (error) {
+        // Ignorar errores de cierre, pero loguear para debugging
+        this.log('warning', `Failed to cleanup ${resourceName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    };
+
+    // Secuencia de cleanup: pages → contexts → browser
     if (this.page) {
-      await this.page.close().catch(() => {
-        // Ignorar errores de cierre
-      });
-    }
-    if (this.context) {
-      await this.context.close().catch(() => {
-        // Ignorar errores de cierre
-      });
-    }
-    if (this.browser) {
-      await this.browser.close().catch(() => {
-        // Ignorar errores de cierre
-      });
+      await cleanupWithTimeout(
+        async () => {
+          if (this.page && !this.page.isClosed()) {
+            await this.page.close();
+          }
+        },
+        'page'
+      );
+      this.page = null;
     }
 
-    this.page = null;
-    this.context = null;
-    this.browser = null;
+    if (this.context) {
+      await cleanupWithTimeout(
+        async () => {
+          if (this.context) {
+            // Cerrar todas las páginas del contexto primero
+            const pages = this.context.pages();
+            await Promise.all(pages.map(p => p.close().catch(() => { })));
+            await this.context.close();
+          }
+        },
+        'context'
+      );
+      this.context = null;
+    }
+
+    if (this.browser) {
+      await cleanupWithTimeout(
+        async () => {
+          if (this.browser && this.browser.isConnected()) {
+            await this.browser.close();
+          }
+        },
+        'browser'
+      );
+      this.browser = null;
+    }
   }
 }

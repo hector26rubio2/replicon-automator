@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
-export type AuditAction = 
+import { productionLogger } from '../utils/production-logger';
+export type AuditAction =
   | 'APP_START'
   | 'APP_CLOSE'
   | 'LOGIN_ATTEMPT'
@@ -40,7 +41,7 @@ class AuditLoggerService {
   private sessionId: string;
   private logDir: string;
   private currentLogFile: string;
-  private maxFileSize: number = 5 * 1024 * 1024; 
+  private maxFileSize: number = 5 * 1024 * 1024;
   private maxFiles: number = 10;
   constructor() {
     this.sessionId = this.generateSessionId();
@@ -92,7 +93,7 @@ class AuditLoggerService {
         fs.unlinkSync(f.path);
       });
     } catch (error) {
-      console.error('[AuditLogger] Error cleaning old logs:', error);
+      productionLogger.error('AuditLogger: Error cleaning old logs', error);
     }
   }
   log(action: AuditAction, details: Record<string, unknown> = {}, userId?: string): void {

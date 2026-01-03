@@ -18,10 +18,13 @@
     "dist": "npm run clean && npm run copy-playwright-bins && npm run build && electron-builder",
     "dist:win": "npm run clean && npm run copy-playwright-bins && npm run build && electron-builder --win",
     "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "validate": "npm run lint && npm run typecheck && npm run test",
+    "prepare": "husky"
   },
   "dependencies": {
     "date-holidays": "^3.26.6",
@@ -35,6 +38,8 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.3.0",
+    "@commitlint/config-conventional": "^20.3.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
@@ -46,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^1.6.1",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
@@ -55,11 +61,15 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.1.7",
+    "jest-axe": "^10.0.0",
     "jsdom": "^27.4.0",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.4.32",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.3.6",
+    "terser": "^5.44.1",
     "tsc-alias": "^1.8.16",
     "typescript": "5.3.3",
     "vite": "^7.3.0",
@@ -70,12 +80,15 @@
     "appId": "com.hdrt.replicon-automator",
     "productName": "Replicon Automator",
     "artifactName": "Replicon.Automator.Setup.${ext}",
+    "compression": "maximum",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
-      "package.json"
+      "package.json",
+      "!dist/**/*.map",
+      "!dist/**/*.d.ts"
     ],
     "extraFiles": [
       {
@@ -88,7 +101,10 @@
         "from": "playwright-bin",
         "to": "playwright",
         "filter": [
-          "**/*"
+          "**/*",
+          "!**/*.pdb",
+          "!**/DEPENDENCIES*",
+          "!**/INSTALLATION*"
         ]
       }
     ],
@@ -116,5 +132,13 @@
       "repo": "replicon-automator",
       "releaseType": "release"
     }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ],
+    "*.{json,md}": [
+      "echo 'Skipping prettier'"
+    ]
   }
 }

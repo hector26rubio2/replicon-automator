@@ -28,24 +28,25 @@ module.exports = {
   },
   rules: {
     // TypeScript
-    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-non-null-assertion': 'error',
 
     // React
     'react/react-in-jsx-scope': 'off', // No necesario en React 17+
     'react/prop-types': 'off', // Usamos TypeScript
     'react/display-name': 'off',
     'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'warn',
+    'react-hooks/exhaustive-deps': 'error',
 
     // General
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-console': ['error', { allow: ['warn', 'error'] }],
     'prefer-const': 'error',
     'no-var': 'error',
     eqeqeq: ['error', 'always'],
+    'no-throw-literal': 'error',
   },
   overrides: [
     {

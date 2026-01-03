@@ -54,7 +54,20 @@ export function setupIPCHandlers(deps: IPCControllerDeps): void {
     return credentialsService.clearCredentials();
   });
   ipcMain.handle('config:get', async (_, key: string) => {
-    return store.get(key);
+    const value = store.get(key);
+
+    // Si es la config de la app y no tiene loginUrl, usar el de env
+    if (key === 'config' && value && typeof value === 'object') {
+      const appConfig = value as { loginUrl?: string; timeout?: number; headless?: boolean; autoSave?: boolean };
+      if (!appConfig.loginUrl || appConfig.loginUrl.trim() === '') {
+        return {
+          ...appConfig,
+          loginUrl: process.env.REPLICON_LOGIN_URL || '',
+        };
+      }
+    }
+
+    return value;
   });
   ipcMain.handle('config:set', async (_, key: string, value: unknown) => {
     store.set(key, value);
