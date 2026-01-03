@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-01-03
+
+### Performance
+
+- **CI/CD Optimization**: Workflow optimized for GitHub free tier efficiency
+  - Added caching for `node_modules` and Playwright browsers (~3min savings per build)
+  - Enabled concurrency cancellation to avoid duplicate builds
+  - Trigger only on tags, PRs, and manual dispatch (no auto-build on every push)
+  - Reduced artifact retention to 30 days (storage optimization)
+  - Build time reduced from ~8min to ~4min
+
+### Technical
+
+- Estimated savings: 75% of monthly GitHub Actions minutes (480min → 120min)
+- Build now uses ubuntu-latest for faster execution
+- Workflow triggers optimized for production releases only
+
 ## [3.4.0] - 2026-01-03
 
 ### Fixed
