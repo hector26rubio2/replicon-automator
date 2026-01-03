@@ -9,13 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [3.5.0] - 2026-01-03
 
 **Fixed**
+
 - CI/CD Build System: Configured cross-platform Windows builds on Linux
 - Installed Wine and dependencies for Windows executable signing
 - Disabled automatic code signing discovery with CSC_IDENTITY_AUTO_DISCOVERY=false
 - Fixed Playwright cache paths for Linux runner
-- Corrected release artifact file paths (release/*.exe)
+- Corrected release artifact file paths (release/\*.exe)
 
 **Performance**
+
 - GitHub Actions Optimization: Workflow optimized for free tier efficiency
 - Added caching for node_modules and Playwright browsers (~3min savings per build)
 - Enabled concurrency cancellation to avoid duplicate builds
@@ -24,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Uses ubuntu-latest runner (2x-10x faster than windows-latest)
 
 **Technical**
+
 - Build time: ~8min → ~4min (50% improvement)
 - Estimated savings: 75% of monthly GitHub Actions minutes (480min → 120min)
 - Cross-platform build: Windows .exe from Linux runner using Wine
