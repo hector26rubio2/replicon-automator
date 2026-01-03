@@ -2,10 +2,15 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
-    tags: ['v*']
+    tags: ['v*']        # Solo en tags de release
   pull_request:
-    branches: [main, develop]
+    branches: [main]    # Solo PRs a main
+  workflow_dispatch:    # Ejecución manual
+
+# Cancelar builds duplicados
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '22.14.0'
@@ -13,12 +18,11 @@ env:
 jobs:
   build:
     name: Build & Quality Check
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     outputs:
       version: ${{ steps.version.outputs.version }}
-      release_notes: ${{ steps.changelog.outputs.notes }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,52 +31,54 @@ jobs:
       
       - name: Get version from tag
         id: version
-        shell: pwsh
         run: |
-          if ("${{ github.ref }}" -match "refs/tags/v(.+)") {
-            $version = $matches[1]
-          } else {
-            $version = (Get-Content package.json | ConvertFrom-Json).version
-          }
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-          echo "Version: $version"
+          if [[ "${{ github.ref }}" =~ refs/tags/v(.+) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
       
       - name: Extract release notes from CHANGELOG
         id: changelog
-        shell: pwsh
         run: |
-          $version = "${{ steps.version.outputs.version }}"
-          $changelog = Get-Content CHANGELOG.md -Raw
+          VERSION="${{ steps.version.outputs.version }}"
           
-          # Buscar la sección de esta versión
-          $pattern = "(?s)## \[$version\].*?(?=## \[|$)"
-          if ($changelog -match $pattern) {
-            $notes = $matches[0]
-            # Limpiar el encabezado de versión
-            $notes = $notes -replace "## \[$version\].*?\n", ""
-            $notes = $notes.Trim()
-          } else {
-            $notes = "Release v$version"
-          }
+          # Extract section for this version
+          awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | head -n -1 | tail -n +2 > release_notes.txt
           
-          # Guardar en archivo para evitar problemas de escape
-          $notes | Out-File -FilePath release_notes.txt -Encoding utf8
-          echo "Found release notes for v$version"
-      
-      - name: Update package.json version
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: pwsh
-        run: |
-          $pkg = Get-Content package.json | ConvertFrom-Json
-          $pkg.version = "${{ steps.version.outputs.version }}"
-          $pkg | ConvertTo-Json -Depth 100 | Set-Content package.json
-          echo "Updated package.json to version ${{ steps.version.outputs.version }}"
+          if [ ! -s release_notes.txt ]; then
+            echo "Release v$VERSION" > release_notes.txt
+          fi
+          
+          echo "Release notes extracted"
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+      
+      # Cache node_modules para ahorrar ~2 minutos
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      # Cache Playwright browsers para ahorrar ~1 minuto
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       
       - name: Install dependencies
         run: npm ci
@@ -91,8 +97,8 @@ jobs:
       - name: Copy Playwright binaries
         run: npm run copy-playwright-bins
       
-      - name: Package application
-        run: npx electron-builder --win --publish never
+      - name: Package application (Windows)
+        run: npx electron-builder --win --x64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
@@ -103,8 +109,9 @@ jobs:
           path: |
             release/*.exe
             release/*.blockmap
-            release/latest.yml
+            release/*.yml
             release_notes.txt
+          retention-days: 30  # Ahorro de storage
 
   release:
     name: Create Release
@@ -118,21 +125,22 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-installer
-          path: release
       
       - name: List downloaded files
         run: |
           echo "=== Downloaded files ==="
-          ls -lah release/
-          find release/ -type f
+          ls -lah
+          find . -type f
       
       - name: Read release notes
         id: notes
         run: |
           if [ -f release_notes.txt ]; then
-            echo "notes<<EOF" >> $GITHUB_OUTPUT
-            cat release_notes.txt >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            {
+              echo 'notes<<EOF'
+              cat release_notes.txt
+              echo EOF
+            } >> $GITHUB_OUTPUT
           else
             echo "notes=Release v${{ needs.build.outputs.version }}" >> $GITHUB_OUTPUT
           fi
@@ -145,8 +153,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            release/release/*.exe
-            release/release/*.blockmap
-            release/release/latest.yml
+            *.exe
+            *.blockmap
+            *.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
