@@ -46,7 +46,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           
           # Extract section for this version
-          awk "/^## \[$VERSION\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2 > release_notes.txt
+          awk "/^## \[${VERSION}\]/,/^## \[/" CHANGELOG.md | head -n -1 | tail -n +2 > release_notes.txt
           
           if [ ! -s release_notes.txt ]; then
             echo "Release v$VERSION" > release_notes.txt
