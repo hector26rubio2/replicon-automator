@@ -1,9 +1,9 @@
 import { vi } from 'vitest';
 
 // Global mock for Electron API
-globalThis.window = globalThis.window || {} as any;
+globalThis.window = globalThis.window || {} as unknown as Window & typeof globalThis;
 
-(globalThis.window as any).electronAPI = {
+(globalThis.window as unknown as Window & { electronAPI: Record<string, unknown> }).electronAPI = {
   // CSV operations
   loadCSV: vi.fn(async () => ({ success: true, data: [], filePath: '/test.csv' })),
   saveCSV: vi.fn(async () => ({ success: true })),

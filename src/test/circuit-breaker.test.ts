@@ -39,7 +39,9 @@ describe('CircuitBreaker', () => {
         await breaker.execute(async () => {
           throw new Error('fail');
         });
-      } catch {}
+      } catch {
+        // Expected error
+      }
 
       // Then succeed
       await breaker.execute(async () => 'success');
@@ -63,7 +65,9 @@ describe('CircuitBreaker', () => {
         await breaker.execute(async () => {
           throw new Error('fail');
         });
-      } catch {}
+      } catch {
+        // Expected error
+      }
 
       expect(breaker.getState()).toBe('closed'); // Still closed, not enough failures
     });
@@ -77,7 +81,9 @@ describe('CircuitBreaker', () => {
       for (let i = 0; i < 3; i++) {
         try {
           await breaker.execute(failFn);
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       expect(breaker.getState()).toBe('open');
@@ -92,7 +98,9 @@ describe('CircuitBreaker', () => {
       for (let i = 0; i < 3; i++) {
         try {
           await breaker.execute(failFn);
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       // Next call should fail immediately
@@ -112,7 +120,9 @@ describe('CircuitBreaker', () => {
       for (let i = 0; i < 3; i++) {
         try {
           await breaker.execute(failFn);
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       expect(breaker.getState()).toBe('open');
@@ -123,7 +133,9 @@ describe('CircuitBreaker', () => {
       // Next execution should try (half-open)
       try {
         await breaker.execute(failFn);
-      } catch {}
+      } catch {
+        // Expected error
+      }
 
       // Cleanup
       vi.useRealTimers();
@@ -139,7 +151,9 @@ describe('CircuitBreaker', () => {
       for (let i = 0; i < 3; i++) {
         try {
           await breaker.execute(failFn);
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       // Wait for reset time
@@ -164,7 +178,9 @@ describe('CircuitBreaker', () => {
       for (let i = 0; i < 3; i++) {
         try {
           await breaker.execute(failFn);
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       expect(breaker.getState()).toBe('open');
@@ -183,7 +199,9 @@ describe('CircuitBreaker', () => {
       for (let i = 0; i < 3; i++) {
         try {
           await breaker.execute(failFn);
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       breaker.reset();
@@ -204,7 +222,9 @@ describe('CircuitBreaker', () => {
           await breaker.execute(async () => {
             throw new Error('fail');
           });
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       // Should still be closed (only 2 failures)
@@ -226,7 +246,9 @@ describe('CircuitBreaker', () => {
           await breaker.execute(async () => {
             throw new Error('fail');
           });
-        } catch {}
+        } catch {
+          // Expected error
+        }
       }
 
       expect(breaker.getState()).toBe('open');

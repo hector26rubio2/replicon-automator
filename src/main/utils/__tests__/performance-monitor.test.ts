@@ -21,7 +21,6 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should end an operation successfully', () => {
-      const startTime = Date.now();
       monitor.startOperation('test-op');
       vi.advanceTimersByTime(100);
       monitor.endOperation('test-op', true);
@@ -135,7 +134,7 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should remove oldest entries when exceeding max size', () => {
-      const firstMetrics = monitor.captureMetrics({ id: 1 });
+      monitor.captureMetrics({ id: 1 });
       
       for (let i = 2; i <= 101; i++) {
         monitor.captureMetrics({ id: i });
@@ -219,11 +218,11 @@ describe('PerformanceMonitor', () => {
 
       const stats = monitor.getOperationStats('op1');
       expect(stats).not.toBeNull();
-      expect(stats!.count).toBe(1);
-      expect(stats!.avgDuration).toBe(100);
-      expect(stats!.minDuration).toBe(100);
-      expect(stats!.maxDuration).toBe(100);
-      expect(stats!.successRate).toBe(100);
+      expect(stats?.count).toBe(1);
+      expect(stats?.avgDuration).toBe(100);
+      expect(stats?.minDuration).toBe(100);
+      expect(stats?.maxDuration).toBe(100);
+      expect(stats?.successRate).toBe(100);
     });
 
     it('should calculate stats for multiple operations', () => {
@@ -242,11 +241,11 @@ describe('PerformanceMonitor', () => {
 
       const stats = monitor.getOperationStats('csv-load');
       expect(stats).not.toBeNull();
-      expect(stats!.count).toBe(3);
-      expect(stats!.avgDuration).toBe(200); // (100 + 200 + 300) / 3
-      expect(stats!.minDuration).toBe(100);
-      expect(stats!.maxDuration).toBe(300);
-      expect(stats!.successRate).toBe(67); // 2/3 = 66.67 rounded to 67
+      expect(stats?.count).toBe(3);
+      expect(stats?.avgDuration).toBe(200); // (100 + 200 + 300) / 3
+      expect(stats?.minDuration).toBe(100);
+      expect(stats?.maxDuration).toBe(300);
+      expect(stats?.successRate).toBe(67); // 2/3 = 66.67 rounded to 67
     });
 
     it('should handle all failed operations', () => {
@@ -259,7 +258,7 @@ describe('PerformanceMonitor', () => {
       monitor.endOperation('fail1', false);
 
       const stats = monitor.getOperationStats('fail1');
-      expect(stats!.successRate).toBe(0);
+      expect(stats?.successRate).toBe(0);
     });
 
     it('should handle all successful operations', () => {
@@ -272,7 +271,7 @@ describe('PerformanceMonitor', () => {
       monitor.endOperation('success1', true);
 
       const stats = monitor.getOperationStats('success1');
-      expect(stats!.successRate).toBe(100);
+      expect(stats?.successRate).toBe(100);
     });
 
     it('should only include specified operation in stats', () => {
@@ -285,8 +284,8 @@ describe('PerformanceMonitor', () => {
       monitor.endOperation('op2', true);
 
       const stats = monitor.getOperationStats('op1');
-      expect(stats!.count).toBe(1);
-      expect(stats!.avgDuration).toBe(100);
+      expect(stats?.count).toBe(1);
+      expect(stats?.avgDuration).toBe(100);
     });
   });
 

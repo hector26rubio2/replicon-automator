@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { t, getSection, getCurrentLanguage, type Language } from '../index';
+import { describe, it, expect, vi } from 'vitest';
+import { t, getSection, getCurrentLanguage } from '../index';
 
 vi.mock('electron-store', () => {
   return {

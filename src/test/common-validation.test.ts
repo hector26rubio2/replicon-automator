@@ -147,7 +147,7 @@ describe('Validation', () => {
     });
 
     it('should use default headless value', () => {
-      const { headless, ...requestWithoutHeadless } = validRequest;
+      const { headless: _headless, ...requestWithoutHeadless } = validRequest;
       const result = validateStartAutomation(requestWithoutHeadless);
 
       expect(result.success).toBe(true);
@@ -181,7 +181,7 @@ describe('Validation', () => {
     });
 
     it('should fail with missing rowIndices', () => {
-      const { rowIndices, ...requestWithoutIndices } = validRequest;
+      const { rowIndices: _rowIndices, ...requestWithoutIndices } = validRequest;
       const result = validateStartAutomation(requestWithoutIndices);
 
       expect(result.success).toBe(false);

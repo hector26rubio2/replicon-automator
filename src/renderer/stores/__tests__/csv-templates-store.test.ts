@@ -180,12 +180,13 @@ describe('CSV Templates Store', () => {
       const { templates, deleteTemplate } = useCSVTemplatesStore.getState();
       const defaultTemplate = templates.find(t => t.isDefault);
       expect(defaultTemplate).toBeDefined();
+      if (!defaultTemplate) return;
       
       const initialCount = templates.length;
-      deleteTemplate(defaultTemplate!.id);
+      deleteTemplate(defaultTemplate.id);
 
       expect(useCSVTemplatesStore.getState().templates.length).toBe(initialCount);
-      expect(useCSVTemplatesStore.getState().getTemplate(defaultTemplate!.id)).toBeDefined();
+      expect(useCSVTemplatesStore.getState().getTemplate(defaultTemplate.id)).toBeDefined();
     });
 
     it('should ignore delete of non-existent template', () => {
@@ -221,7 +222,7 @@ describe('CSV Templates Store', () => {
 
   describe('duplicateTemplate', () => {
     it('should create duplicate with new name', () => {
-      const { addTemplate, duplicateTemplate, getTemplate } = useCSVTemplatesStore.getState();
+      const { addTemplate, duplicateTemplate } = useCSVTemplatesStore.getState();
       const original = addTemplate('Original', [{ cuenta: 'TEST', proyecto: 'PROJ', extras: '' }]);
       
       const duplicate = duplicateTemplate(original.id, 'Duplicate');
@@ -265,8 +266,9 @@ describe('CSV Templates Store', () => {
       const { templates, duplicateTemplate } = useCSVTemplatesStore.getState();
       const defaultTemplate = templates.find(t => t.isDefault);
       expect(defaultTemplate).toBeDefined();
+      if (!defaultTemplate) return;
       
-      const duplicate = duplicateTemplate(defaultTemplate!.id, 'Duplicate');
+      const duplicate = duplicateTemplate(defaultTemplate.id, 'Duplicate');
 
       expect(duplicate?.isDefault).toBe(false);
     });
@@ -294,7 +296,7 @@ describe('CSV Templates Store', () => {
     });
 
     it('should not import duplicate IDs', () => {
-      const { addTemplate, templates, importTemplates } = useCSVTemplatesStore.getState();
+      const { addTemplate, importTemplates } = useCSVTemplatesStore.getState();
       const existing = addTemplate('Existing', [{ cuenta: '', proyecto: '', extras: '' }]);
       const initialCount = useCSVTemplatesStore.getState().templates.length;
       

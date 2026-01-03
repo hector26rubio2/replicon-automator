@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useExecutionHistoryStore } from '../execution-history-store';
-import type { ExecutionRecord } from '../execution-history-store';
 
 describe('Execution History Store', () => {
   beforeEach(() => {
@@ -256,7 +255,7 @@ describe('Execution History Store', () => {
     });
 
     it('should count executions from current month', () => {
-      const { addExecution, getStats } = useExecutionHistoryStore.getState();
+      const { getStats } = useExecutionHistoryStore.getState();
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();

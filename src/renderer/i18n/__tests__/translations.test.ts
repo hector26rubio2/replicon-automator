@@ -181,8 +181,8 @@ describe('Translations', () => {
 
     it('should not have empty strings', () => {
       languages.forEach(lang => {
-        Object.entries(translations[lang]).forEach(([section, values]) => {
-          Object.entries(values).forEach(([key, value]) => {
+        Object.entries(translations[lang]).forEach(([_section, values]) => {
+          Object.entries(values).forEach(([_key, value]) => {
             if (typeof value === 'string') {
               expect(value.length).toBeGreaterThan(0);
             }

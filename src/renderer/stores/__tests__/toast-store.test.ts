@@ -26,7 +26,7 @@ describe('Toast Store', () => {
 
   describe('addToast', () => {
     it('should add a toast', () => {
-      const { addToast, toasts } = useToastStore.getState();
+      const { addToast } = useToastStore.getState();
       
       const id = addToast({ type: 'info', title: 'Test' });
       
@@ -243,7 +243,9 @@ describe('Toast Store', () => {
           success: 'Done!',
           error: 'Failed',
         });
-      } catch {}
+      } catch {
+        // Expected error
+      }
       
       const { toasts } = useToastStore.getState();
       // Should have at least one toast (error)
