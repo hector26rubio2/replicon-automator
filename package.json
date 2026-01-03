@@ -1,6 +1,6 @@
 {
   "name": "replicon-automator",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Automatizador de Replicon - App de escritorio moderna con Electron + Playwright",
   "main": "dist/main/main/index.js",
   "author": "Hector David Rubio Tabares",
