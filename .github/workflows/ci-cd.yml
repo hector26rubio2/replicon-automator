@@ -163,8 +163,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            *.exe
-            *.blockmap
-            *.yml
+            release/*.exe
+            release/*.blockmap
+            release/latest.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
