@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
 import { productionLogger } from '../utils/production-logger';
+import * as crypto from 'crypto';
 export type AuditAction =
   | 'APP_START'
   | 'APP_CLOSE'
@@ -50,7 +51,8 @@ class AuditLoggerService {
     this.ensureLogDir();
   }
   private generateSessionId(): string {
-    return `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const randomSuffix = crypto.randomBytes(6).toString('base64url').slice(0, 9);
+    return `session-${Date.now()}-${randomSuffix}`;
   }
   private getLogFileName(): string {
     const date = new Date().toISOString().split('T')[0];
@@ -62,7 +64,8 @@ class AuditLoggerService {
     }
   }
   private generateEntryId(): string {
-    return `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const randomSuffix = crypto.randomBytes(6).toString('base64url').slice(0, 9);
+    return `audit-${Date.now()}-${randomSuffix}`;
   }
   private shouldRotate(): boolean {
     if (!fs.existsSync(this.currentLogFile)) {
