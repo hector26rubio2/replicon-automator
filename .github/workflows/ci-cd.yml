@@ -113,6 +113,26 @@ jobs:
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
       
+      # CRÍTICO: Copiar binarios de Playwright a node_modules para asarUnpack
+      - name: Copy Playwright binaries to node_modules
+        run: |
+          echo "📦 Copiando binarios de Playwright a node_modules..."
+          mkdir -p node_modules/playwright/.local-browsers
+          
+          # Copiar desde cache de Playwright
+          if [ -d "$HOME/.cache/ms-playwright" ]; then
+            cp -r $HOME/.cache/ms-playwright/chromium-* node_modules/playwright/.local-browsers/ 2>/dev/null || true
+          fi
+          
+          # Verificar
+          if [ -d "node_modules/playwright/.local-browsers/chromium-"* ]; then
+            echo "✅ Binarios copiados correctamente"
+            ls -lah node_modules/playwright/.local-browsers/
+          else
+            echo "❌ ERROR: No se pudieron copiar los binarios"
+            exit 1
+          fi
+      
       - name: Run quality checks
         run: npm run validate
       
@@ -121,32 +141,14 @@ jobs:
         env:
           NODE_ENV: production
       
-      - name: Copy Playwright binaries
-        run: npm run copy-playwright-bins
-      
-      # CRÍTICO: Verificar que los binarios se copiaron correctamente
-      - name: Verify Playwright binaries
-        run: |
-          if [ ! -d "playwright-bin/chromium-"* ]; then
-            echo "❌ ERROR: Playwright binaries not found in playwright-bin/"
-            exit 1
-          fi
-          echo "✅ Playwright binaries found:"
-          ls -lah playwright-bin/
-          
-          # Verificar estructura interna
-          echo ""
-          echo "📂 Estructura de chromium:"
-          find playwright-bin -name "chrome.exe" -type f
-      
       - name: Package application (Windows)
         run: npx electron-builder --win --x64 --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
       
-      # CRÍTICO: Verificar que los binarios quedaron en el instalador
-      - name: Verify packaged resources
+      # Verificar que node_modules/playwright quedó desempaquetado
+      - name: Verify packaged Playwright (asarUnpack)
         run: |
           echo "📦 Verificando recursos empaquetados..."
           
@@ -154,16 +156,22 @@ jobs:
             echo "✅ Carpeta resources encontrada"
             ls -lah release/win-unpacked/resources/
             
-            if [ -d "release/win-unpacked/resources/playwright" ]; then
+            if [ -d "release/win-unpacked/resources/app.asar.unpacked" ]; then
               echo ""
-              echo "✅ Carpeta playwright encontrada en resources"
-              ls -lah release/win-unpacked/resources/playwright/
+              echo "✅ app.asar.unpacked encontrado"
               
-              echo ""
-              echo "📂 Buscando chrome.exe:"
-              find release/win-unpacked/resources/playwright -name "chrome.exe" -type f || echo "❌ chrome.exe NO encontrado"
+              if [ -d "release/win-unpacked/resources/app.asar.unpacked/node_modules/playwright" ]; then
+                echo "✅ Playwright desempaquetado correctamente"
+                echo ""
+                echo "📂 Buscando chrome.exe:"
+                find release/win-unpacked/resources/app.asar.unpacked/node_modules/playwright -name "chrome.exe" -type f || echo "⚠️  chrome.exe no encontrado (se descargará al ejecutar)"
+              else
+                echo "❌ ERROR: node_modules/playwright NO encontrado en app.asar.unpacked"
+                ls -lah release/win-unpacked/resources/app.asar.unpacked/node_modules/ || echo "node_modules no existe"
+                exit 1
+              fi
             else
-              echo "❌ ERROR: Carpeta playwright NO encontrada en resources"
+              echo "❌ ERROR: app.asar.unpacked NO encontrado en resources"
               echo "Contenido de resources:"
               ls -lah release/win-unpacked/resources/
               exit 1

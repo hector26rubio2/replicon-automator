@@ -6,19 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.2] - 2026-01-03
+
+### Fixed
+
+**Packaging Architecture Fix (asarUnpack)**
+
+- **BREAKING CHANGE**: Switched from `extraResources` to `asarUnpack` for Playwright binaries
+- Playwright binaries now extracted from app.asar using electron-builder's asarUnpack
+- Removed manual binary copying (copy-playwright-bins.js no longer needed)
+- Simplified playwright-config.ts to let Playwright auto-discover binaries
+- Fixed electron-updater compatibility (asarUnpack updates properly, extraResources don't)
+
+### Changed
+
+- `package.json`: Removed `playwright-bin` from `files` and `extraResources`, added `asarUnpack`
+- `playwright-config.ts`: Simplified to return `undefined` (Playwright auto-discovery)
+- CI/CD workflow: Updated verification to check `app.asar.unpacked/node_modules/playwright`
+- Build scripts: Removed `npm run copy-playwright-bins` from dist commands
+
+### Technical Details
+
+- Previous approach: Copy binaries to `playwright-bin/` → `extraResources` → `resources/playwright`
+- New approach: `asarUnpack` → `resources/app.asar.unpacked/node_modules/playwright`
+- Playwright finds binaries automatically via internal path resolution
+- **Users must uninstall v3.6.0/v3.6.1 and install v3.6.2** (electron-updater cannot migrate asarUnpack)
+
 ## [3.6.1] - 2026-01-03
 
 ### Fixed
 
-**Critical Packaging Fix**
-- Fixed Playwright binaries not being included in GitHub Release installers
-- Added `playwright-bin/**/*` to electron-builder `files` configuration
-- Added verification steps in CI/CD to ensure binaries are packaged correctly
-- Improved logging in playwright-config.ts for better debugging
+**Critical Packaging Fix** ⚠️ DEPRECATED (did not work)
 
-### Technical
-- Installers from GitHub Releases now correctly include Chromium binaries
-- Application will no longer throw "Chromium executable not found" error
+- Attempted to add `playwright-bin/**/*` to `files` configuration
+- Issue persisted: electron-updater cannot update extraResources
+- Superseded by v3.6.2 with asarUnpack approach
 
 ## [3.6.0] - 2026-01-03
 

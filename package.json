@@ -1,6 +1,6 @@
 {
   "name": "replicon-automator",
-  "version": "3.6.1",
+  "version": "3.6.2",
   "description": "Automatizador de Replicon - App de escritorio moderna con Electron + Playwright",
   "main": "dist/main/main/index.js",
   "author": "Hector David Rubio Tabares",
@@ -13,10 +13,9 @@
     "build:renderer": "vite build",
     "build:main": "tsc -p tsconfig.main.json && tsc-alias -p tsconfig.main.json",
     "postinstall": "npx playwright install chromium --with-deps",
-    "copy-playwright-bins": "node scripts/copy-playwright-bins.js",
     "clean": "node scripts/prebuild-cleanup.js",
-    "dist": "npm run clean && npm run copy-playwright-bins && npm run build && electron-builder",
-    "dist:win": "npm run clean && npm run copy-playwright-bins && npm run build && electron-builder --win",
+    "dist": "npm run clean && npm run build && electron-builder",
+    "dist:win": "npm run clean && npm run build && electron-builder --win",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit",
@@ -84,13 +83,14 @@
     "directories": {
       "output": "release"
     },
+    "asarUnpack": [
+      "node_modules/playwright/**/*"
+    ],
     "files": [
       "dist/**/*",
       "package.json",
-      "playwright-bin/**/*",
       "!dist/**/*.map",
-      "!dist/**/*.d.ts",
-      "!playwright-bin/**/*.pdb"
+      "!dist/**/*.d.ts"
     ],
     "extraFiles": [
       {
