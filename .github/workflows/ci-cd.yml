@@ -66,12 +66,10 @@ jobs:
         uses: actions/cache@v4
         id: cache-node-modules
         with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: node_modules
+          key: ${{ runner.os }}-node-v1-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-v1-
       
       # Cache Playwright browsers para ahorrar ~1 minuto (500MB aprox)
       - name: Cache Playwright browsers
@@ -79,9 +77,9 @@ jobs:
         id: cache-playwright
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-playwright-v1-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-playwright-
+            ${{ runner.os }}-playwright-v1-
       
       # Cache Wine para ahorrar ~1-2 minutos en instalación
       - name: Cache Wine installation
@@ -91,9 +89,9 @@ jobs:
           path: |
             /opt/wine-stable
             ~/.wine
-          key: ${{ runner.os }}-wine-9.0
+          key: ${{ runner.os }}-wine-v1-9.0
           restore-keys: |
-            ${{ runner.os }}-wine-
+            ${{ runner.os }}-wine-v1-
       
       - name: Install Wine and dependencies
         if: steps.cache-wine.outputs.cache-hit != 'true'
@@ -190,7 +188,7 @@ jobs:
             release/*.blockmap
             release/*.yml
             release_notes.txt
-          retention-days: 30  # Ahorro de storage
+          retention-days: 1  # Eliminar después de 1 día para $0 storage
 
   release:
     name: Create Release

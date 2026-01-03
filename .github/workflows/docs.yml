@@ -124,6 +124,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs-site
+          retention-days: 1  # Eliminar después de deploy para $0 storage
 
   deploy:
     name: Deploy to Pages

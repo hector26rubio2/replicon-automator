@@ -8,15 +8,18 @@
 
 ## 📊 RECURSOS GRATUITOS DISPONIBLES
 
-| Recurso           | Límite Gratuito    | Uso en este Proyecto      |
-| ----------------- | ------------------ | ------------------------- |
-| GitHub Actions    | 2,000 min/mes      | ~400 min/mes (optimizado) |
-| GitHub Packages   | 500 MB storage     | ~200 MB (caché npm)       |
-| GitHub Pages      | 1 GB/mes bandwidth | Docs + Coverage           |
-| Git LFS           | 1 GB storage       | No usado                  |
-| Codespaces        | 60 horas/mes       | Desarrollo remoto         |
-| Security Features | Ilimitado          | CodeQL + Dependabot       |
-| Projects          | Ilimitado          | Kanban completo           |
+| Recurso             | Límite Gratuito    | Uso en este Proyecto           |
+| ------------------- | ------------------ | ------------------------------ |
+| GitHub Actions      | 2,000 min/mes      | ~400 min/mes (optimizado)      |
+| **Actions Storage** | **500 MB**         | **~0 MB (optimizado a $0)** ⭐ |
+| GitHub Packages     | 500 MB storage     | ~200 MB (caché npm)            |
+| GitHub Pages        | 1 GB/mes bandwidth | Docs + Coverage                |
+| Git LFS             | 1 GB storage       | No usado                       |
+| Codespaces          | 60 horas/mes       | Desarrollo remoto              |
+| Security Features   | Ilimitado          | CodeQL + Dependabot            |
+| Projects            | Ilimitado          | Kanban completo                |
+
+> **📝 Nota:** Ver [GITHUB_STORAGE_OPTIMIZATION.md](./GITHUB_STORAGE_OPTIMIZATION.md) para detalles sobre cómo se logró **$0 de storage**.
 
 ---
 
