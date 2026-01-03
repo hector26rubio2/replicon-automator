@@ -54,7 +54,7 @@ export function useRovingTabIndex<T extends HTMLElement>(
     itemsRef.current[index] = el;
   }, []);
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    let newIndex = currentIndex.current;
+    let newIndex: number;
     switch (e.key) {
       case 'ArrowDown':
       case 'ArrowRight':

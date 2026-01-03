@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para comparar commits
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -51,11 +53,20 @@ jobs:
       - name: Check commit message format
         if: github.event_name == 'pull_request'
         run: |
+          # Fetch main branch for comparison
+          git fetch origin main:main || git fetch origin main
+          
           # Validar que los commits sigan conventional commits
-          COMMITS=$(git log --pretty=format:"%s" origin/main..HEAD)
+          COMMITS=$(git log --pretty=format:"%s" main..HEAD 2>/dev/null || git log --pretty=format:"%s" -1)
           
           echo "Validando mensajes de commits:"
           echo "$COMMITS"
+          
+          # Si no hay commits (ej: merge directo), skip
+          if [ -z "$COMMITS" ]; then
+            echo "ℹ️  No hay commits para validar"
+            exit 0
+          fi
           
           if ! echo "$COMMITS" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?!?:'; then
             echo "❌ ERROR: Los commits deben seguir el formato Conventional Commits"
