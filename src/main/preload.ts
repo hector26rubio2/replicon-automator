@@ -6,31 +6,20 @@ import type {
   AutomationProgress,
   LogEntry 
 } from '../shared/types';
-
-// Exponer APIs seguras al renderer
 contextBridge.exposeInMainWorld('electronAPI', {
-  // CSV
   loadCSV: () => ipcRenderer.invoke('csv:load'),
   saveCSV: (data: CSVRow[]) => ipcRenderer.invoke('csv:save', data),
-
-  // Credenciales
   saveCredentials: (credentials: Credentials) => 
     ipcRenderer.invoke('credentials:save', credentials),
   loadCredentials: () => ipcRenderer.invoke('credentials:load'),
   clearCredentials: () => ipcRenderer.invoke('credentials:clear'),
-
-  // Config
   getConfig: (key: string) => ipcRenderer.invoke('config:get', key),
   setConfig: (key: string, value: unknown) => 
     ipcRenderer.invoke('config:set', key, value),
-
-  // Automatización
   startAutomation: (request: StartAutomationRequest) => 
     ipcRenderer.invoke('automation:start', request),
   stopAutomation: () => ipcRenderer.invoke('automation:stop'),
   pauseAutomation: () => ipcRenderer.invoke('automation:pause'),
-
-  // Automatización Avanzada (Dry Run, Validation, Recovery)
   validateAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown> }) =>
     ipcRenderer.invoke('automation:validate', data),
   dryRunAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown>; config: Record<string, unknown> }) =>
@@ -47,8 +36,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('automation:clearCheckpoint', automationId),
   isEncryptionAvailable: () =>
     ipcRenderer.invoke('automation:isEncryptionAvailable'),
-
-  // App info y updates
   getAppVersion: () => ipcRenderer.invoke('app:version'),
   checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
   downloadUpdate: () => ipcRenderer.invoke('app:download-update'),
@@ -66,8 +53,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('update-error', () => callback());
     return () => ipcRenderer.removeAllListeners('update-error');
   },
-
-  // Eventos de automatización
   onAutomationProgress: (callback: (progress: AutomationProgress) => void) => {
     ipcRenderer.on('automation:progress', (_, progress) => callback(progress));
     return () => ipcRenderer.removeAllListeners('automation:progress');
@@ -84,50 +69,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('automation:error', (_, error) => callback(error));
     return () => ipcRenderer.removeAllListeners('automation:error');
   },
-
-  // Atajos de teclado globales
-  onShortcutLoadCSV: (callback: () => void) => {
-    ipcRenderer.on('shortcut:load-csv', () => callback());
-    return () => ipcRenderer.removeAllListeners('shortcut:load-csv');
-  },
-  onShortcutSaveCSV: (callback: () => void) => {
-    ipcRenderer.on('shortcut:save-csv', () => callback());
-    return () => ipcRenderer.removeAllListeners('shortcut:save-csv');
-  },
-  onShortcutRunAutomation: (callback: () => void) => {
-    ipcRenderer.on('shortcut:run-automation', () => callback());
-    return () => ipcRenderer.removeAllListeners('shortcut:run-automation');
-  },
-  onShortcutToggleTheme: (callback: () => void) => {
-    ipcRenderer.on('shortcut:toggle-theme', () => callback());
-    return () => ipcRenderer.removeAllListeners('shortcut:toggle-theme');
-  },
-  onShortcutToggleLanguage: (callback: () => void) => {
-    ipcRenderer.on('shortcut:toggle-language', () => callback());
-    return () => ipcRenderer.removeAllListeners('shortcut:toggle-language');
-  },
-  onShortcutGoToTab: (callback: (tab: number) => void) => {
-    ipcRenderer.on('shortcut:go-to-tab', (_, tab) => callback(tab));
-    return () => ipcRenderer.removeAllListeners('shortcut:go-to-tab');
-  },
-  onShortcutShowShortcuts: (callback: () => void) => {
-    ipcRenderer.on('shortcut:show-shortcuts', () => callback());
-    return () => ipcRenderer.removeAllListeners('shortcut:show-shortcuts');
-  },
-
-  // Dev logs (solo en desarrollo)
   onMainLog: (callback: (log: { level: string; message: string }) => void) => {
     ipcRenderer.on('main:log', (_, log) => callback(log));
     return () => ipcRenderer.removeAllListeners('main:log');
   },
-
-  // Send renderer logs to main for file logging
   sendLogToMain: (level: string, source: string, message: string) => {
     ipcRenderer.send('renderer:log', { level, source, message });
   },
 });
-
-// Tipos para TypeScript en el renderer
 declare global {
   interface Window {
     electronAPI: {
@@ -141,7 +90,6 @@ declare global {
       startAutomation: (request: StartAutomationRequest) => Promise<{ success: boolean; error?: string }>;
       stopAutomation: () => Promise<{ success: boolean }>;
       pauseAutomation: () => Promise<{ success: boolean }>;
-      // Advanced automation
       validateAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown> }) => 
         Promise<{ success: boolean; result?: { isValid: boolean; errors: string[]; warnings: string[]; suggestions: string[] }; error?: string }>;
       dryRunAutomation: (data: { csvData: CSVRow[]; mappings: Record<string, string>; horarios: Record<string, unknown>; config: Record<string, unknown> }) =>
@@ -166,13 +114,6 @@ declare global {
       onAutomationLog: (callback: (log: LogEntry) => void) => () => void;
       onAutomationComplete: (callback: (result: { success: boolean }) => void) => () => void;
       onAutomationError: (callback: (error: { error: string }) => void) => () => void;
-      onShortcutLoadCSV: (callback: () => void) => () => void;
-      onShortcutSaveCSV: (callback: () => void) => () => void;
-      onShortcutRunAutomation: (callback: () => void) => () => void;
-      onShortcutToggleTheme: (callback: () => void) => () => void;
-      onShortcutToggleLanguage: (callback: () => void) => () => void;
-      onShortcutGoToTab: (callback: (tab: number) => void) => () => void;
-      onShortcutShowShortcuts: (callback: () => void) => () => void;
       onMainLog?: (callback: (log: { level: string; message: string }) => void) => () => void;
       sendLogToMain?: (level: string, source: string, message: string) => void;
     };

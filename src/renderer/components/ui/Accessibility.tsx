@@ -1,30 +1,17 @@
-/**
- * Accessible Components and Hooks
- * Provides accessibility enhancements for the application
- */
 import { useCallback, useEffect, useRef, type KeyboardEvent } from 'react';
-
-// Focus trap hook - keeps focus within a container
 export function useFocusTrap(isActive: boolean) {
   const containerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!isActive || !containerRef.current) return;
-
     const container = containerRef.current;
     const focusableElements = container.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-    
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
-
-    // Focus first element when trap activates
     firstElement?.focus();
-
     const handleKeyDown = (e: globalThis.KeyboardEvent) => {
       if (e.key !== 'Tab') return;
-
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
@@ -37,15 +24,11 @@ export function useFocusTrap(isActive: boolean) {
         }
       }
     };
-
     container.addEventListener('keydown', handleKeyDown);
     return () => container.removeEventListener('keydown', handleKeyDown);
   }, [isActive]);
-
   return containerRef;
 }
-
-// Announce to screen readers
 export function useScreenReaderAnnounce() {
   const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
     const el = document.createElement('div');
@@ -54,32 +37,24 @@ export function useScreenReaderAnnounce() {
     el.setAttribute('aria-atomic', 'true');
     el.className = 'sr-only';
     el.textContent = message;
-    
     document.body.appendChild(el);
-    
     setTimeout(() => {
       document.body.removeChild(el);
     }, 1000);
   }, []);
-
   return announce;
 }
-
-// Roving tabindex for list navigation
 export function useRovingTabIndex<T extends HTMLElement>(
   itemCount: number,
   initialIndex = 0
 ) {
   const currentIndex = useRef(initialIndex);
   const itemsRef = useRef<(T | null)[]>([]);
-
   const setItemRef = useCallback((index: number) => (el: T | null) => {
     itemsRef.current[index] = el;
   }, []);
-
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     let newIndex = currentIndex.current;
-
     switch (e.key) {
       case 'ArrowDown':
       case 'ArrowRight':
@@ -102,19 +77,14 @@ export function useRovingTabIndex<T extends HTMLElement>(
       default:
         return;
     }
-
     currentIndex.current = newIndex;
     itemsRef.current[newIndex]?.focus();
   }, [itemCount]);
-
   const getTabIndex = useCallback((index: number) => {
     return index === currentIndex.current ? 0 : -1;
   }, []);
-
   return { setItemRef, handleKeyDown, getTabIndex };
 }
-
-// Skip to main content link
 export function SkipToContent({ targetId = 'main-content' }: { targetId?: string }) {
   return (
     <a
@@ -127,8 +97,6 @@ export function SkipToContent({ targetId = 'main-content' }: { targetId?: string
     </a>
   );
 }
-
-// Visually hidden but accessible
 export function VisuallyHidden({ children }: { children: React.ReactNode }) {
   return (
     <span className="sr-only">
@@ -136,8 +104,6 @@ export function VisuallyHidden({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
-
-// Loading indicator with aria
 export function AccessibleLoading({ 
   message = 'Loading...',
   size = 'md' 
@@ -150,7 +116,6 @@ export function AccessibleLoading({
     md: 'h-6 w-6',
     lg: 'h-8 w-8',
   };
-
   return (
     <div 
       role="status" 
@@ -182,8 +147,6 @@ export function AccessibleLoading({
     </div>
   );
 }
-
-// Progress bar with aria
 export function AccessibleProgress({
   value,
   max = 100,
@@ -196,7 +159,6 @@ export function AccessibleProgress({
   showValue?: boolean;
 }) {
   const percentage = Math.round((value / max) * 100);
-
   return (
     <div className="w-full">
       {label && (
@@ -227,8 +189,6 @@ export function AccessibleProgress({
     </div>
   );
 }
-
-// Error message with proper association
 export function AccessibleError({
   id,
   message,
@@ -246,8 +206,6 @@ export function AccessibleError({
     </p>
   );
 }
-
-// Form field with accessibility built in
 export function AccessibleField({
   id,
   label,
@@ -265,7 +223,6 @@ export function AccessibleField({
 }) {
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
-
   return (
     <div className="space-y-1">
       <label 
@@ -276,13 +233,11 @@ export function AccessibleField({
         {required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
         {required && <span className="sr-only">(required)</span>}
       </label>
-      
       {hint && (
         <p id={hintId} className="text-sm text-gray-500 dark:text-gray-400">
           {hint}
         </p>
       )}
-      
       <div
         aria-describedby={[
           hint ? hintId : null,
@@ -291,7 +246,6 @@ export function AccessibleField({
       >
         {children}
       </div>
-      
       {error && <AccessibleError id={errorId} message={error} />}
     </div>
   );

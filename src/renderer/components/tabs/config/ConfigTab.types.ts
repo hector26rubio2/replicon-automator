@@ -1,17 +1,1 @@
-import type { TimeSlot, AccountMappings, AppConfig } from '@shared/types';
-
-export interface ConfigTabProps {
-  horarios: TimeSlot[];
-  onHorariosChange: (horarios: TimeSlot[]) => void;
-  mappings: AccountMappings;
-  onMappingsChange: (mappings: AccountMappings) => void;
-  appConfig: AppConfig;
-  onAppConfigChange: (config: AppConfig) => void;
-}
-
-export interface AccountItemProps {
-  code: string;
-  account: { name: string; projects: Record<string, string> };
-  onRemove: () => void;
-  onAddProject: (projectCode: string, projectName: string) => void;
-}
+import type { TimeSlot, AccountMappings, AppConfig } from '@shared/types';export interface ConfigTabProps {  horarios: TimeSlot[];  onHorariosChange: (horarios: TimeSlot[]) => void;  mappings: AccountMappings;  onMappingsChange: (mappings: AccountMappings) => void;  appConfig: AppConfig;  onAppConfigChange: (config: AppConfig) => void;}export interface AccountItemProps {  code: string;  account: { name: string; projects: Record<string, string> };  onRemove: () => void;  onAddProject: (projectCode: string, projectName: string) => void;}

@@ -1,18 +1,7 @@
-/**
- * Constantes compartidas
- */
-
 export const DEFAULT_HORARIOS = [
   { id: '1', start_time: '7:00am', end_time: '1:00pm' },
   { id: '2', start_time: '2:00pm', end_time: '4:00pm' },
 ];
-
-export const DEFAULT_CONFIG = {
-  loginUrl: 'https://newshore.okta.com/',
-  timeout: 45000,
-  headless: false,
-  autoSave: true,
-};
 
 export const SPECIAL_ACCOUNTS = {
   VACATION: ['H', 'F'],
@@ -20,6 +9,12 @@ export const SPECIAL_ACCOUNTS = {
   WEEKEND: ['FDS', 'ND'],
 };
 
+export const DEFAULT_CONFIG = {
+  loginUrl: process.env.REPLICON_LOGIN_URL || '',
+  timeout: Number(process.env.REPLICON_TIMEOUT) || 45000,
+  headless: process.env.REPLICON_HEADLESS === 'true',
+  autoSave: process.env.REPLICON_AUTOSAVE !== 'false',
+};
 export const DEFAULT_MAPPINGS = {
   "BH": {
     "name": "No work",
@@ -76,8 +71,6 @@ export const DEFAULT_MAPPINGS = {
     "projects": {}
   }
 };
-
-// Templates CSV predefinidos
 export const CSV_TEMPLATES = [
   {
     id: 'standard-week',

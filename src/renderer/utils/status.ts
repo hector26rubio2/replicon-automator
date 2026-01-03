@@ -1,75 +1,1 @@
-/**
- * Status helpers - Centraliza lógica de status de automatización
- * Evita duplicación en Header, AutomationTab, etc.
- */
-
-import type { AutomationProgress } from '@shared/types';
-
-export type AutomationStatus = AutomationProgress['status'];
-
-export interface StatusConfig {
-  color: string;
-  bgColor: string;
-  icon: string;
-}
-
-export const STATUS_CONFIG: Record<AutomationStatus, StatusConfig> = {
-  idle: { 
-    color: 'text-slate-400', 
-    bgColor: 'bg-slate-500', 
-    icon: '⏸️'
-  },
-  running: { 
-    color: 'text-emerald-400', 
-    bgColor: 'bg-emerald-500', 
-    icon: '▶️'
-  },
-  paused: { 
-    color: 'text-amber-400', 
-    bgColor: 'bg-amber-500', 
-    icon: '⏸️'
-  },
-  completed: { 
-    color: 'text-blue-400', 
-    bgColor: 'bg-blue-500', 
-    icon: '✅'
-  },
-  error: { 
-    color: 'text-red-400', 
-    bgColor: 'bg-red-500', 
-    icon: '❌'
-  },
-};
-
-// Translation keys for status text (to be used with t function)
-export const STATUS_TRANSLATION_KEYS: Record<AutomationStatus, string> = {
-  idle: 'automation.status.idle',
-  running: 'automation.status.running',
-  paused: 'automation.status.paused',
-  completed: 'automation.status.completed',
-  error: 'automation.status.error',
-};
-
-export function getStatusConfig(status: AutomationStatus): StatusConfig {
-  return STATUS_CONFIG[status] ?? STATUS_CONFIG.idle;
-}
-
-export function getStatusColor(status: AutomationStatus): string {
-  return getStatusConfig(status).bgColor;
-}
-
-export function getStatusTranslationKey(status: AutomationStatus): string {
-  return STATUS_TRANSLATION_KEYS[status] ?? STATUS_TRANSLATION_KEYS.idle;
-}
-
-export function getStatusIcon(status: AutomationStatus): string {
-  return getStatusConfig(status).icon;
-}
-
-/**
- * Calcula el porcentaje de progreso
- */
-export function getProgressPercent(progress: AutomationProgress | null): number {
-  if (!progress || progress.totalDays === 0) return 0;
-  return Math.round((progress.currentDay / progress.totalDays) * 100);
-}
+import type { AutomationProgress } from '@shared/types';export type AutomationStatus = AutomationProgress['status'];export interface StatusConfig {  color: string;  bgColor: string;  icon: string;}export const STATUS_CONFIG: Record<AutomationStatus, StatusConfig> = {  idle: {     color: 'text-slate-400',     bgColor: 'bg-slate-500',     icon: '⏸️'  },  running: {     color: 'text-emerald-400',     bgColor: 'bg-emerald-500',     icon: '▶️'  },  paused: {     color: 'text-amber-400',     bgColor: 'bg-amber-500',     icon: '⏸️'  },  completed: {     color: 'text-blue-400',     bgColor: 'bg-blue-500',     icon: '✅'  },  error: {     color: 'text-red-400',     bgColor: 'bg-red-500',     icon: '❌'  },};export const STATUS_TRANSLATION_KEYS: Record<AutomationStatus, string> = {  idle: 'automation.status.idle',  running: 'automation.status.running',  paused: 'automation.status.paused',  completed: 'automation.status.completed',  error: 'automation.status.error',};export function getStatusConfig(status: AutomationStatus): StatusConfig {  return STATUS_CONFIG[status] ?? STATUS_CONFIG.idle;}export function getStatusColor(status: AutomationStatus): string {  return getStatusConfig(status).bgColor;}export function getStatusTranslationKey(status: AutomationStatus): string {  return STATUS_TRANSLATION_KEYS[status] ?? STATUS_TRANSLATION_KEYS.idle;}export function getStatusIcon(status: AutomationStatus): string {  return getStatusConfig(status).icon;}export function getProgressPercent(progress: AutomationProgress | null): number {  if (!progress || progress.totalDays === 0) return 0;  return Math.round((progress.currentDay / progress.totalDays) * 100);}

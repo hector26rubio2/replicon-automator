@@ -1,162 +1,1 @@
-/**
- * Virtual List Component - Efficient rendering of large lists
- * Uses windowing technique to only render visible items
- */
-import { useState, useRef, useEffect, useCallback, memo, useMemo } from 'react';
-
-interface VirtualListProps<T> {
-  items: T[];
-  itemHeight: number;
-  renderItem: (item: T, index: number) => React.ReactNode;
-  overscan?: number;
-  className?: string;
-  emptyMessage?: string;
-}
-
-export const VirtualList = memo(function VirtualList<T>({
-  items,
-  itemHeight,
-  renderItem,
-  overscan = 5,
-  className = '',
-  emptyMessage = 'No items to display',
-}: VirtualListProps<T>) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-
-  // Calculate visible range
-  const { startIndex, visibleItems, offsetY } = useMemo(() => {
-    const start = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const visibleCount = Math.ceil(containerHeight / itemHeight);
-    const end = Math.min(items.length, start + visibleCount + overscan * 2);
-    
-    return {
-      startIndex: start,
-      visibleItems: items.slice(start, end),
-      offsetY: start * itemHeight,
-    };
-  }, [scrollTop, containerHeight, itemHeight, items, overscan]);
-
-  // Handle scroll
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
-  }, []);
-
-  // Observe container size changes
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerHeight(entry.contentRect.height);
-      }
-    });
-
-    resizeObserver.observe(container);
-    setContainerHeight(container.clientHeight);
-
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  if (items.length === 0) {
-    return (
-      <div 
-        className={`flex items-center justify-center h-full text-gray-500 dark:text-slate-400 ${className}`}
-        role="status"
-      >
-        {emptyMessage}
-      </div>
-    );
-  }
-
-  const totalHeight = items.length * itemHeight;
-
-  return (
-    <div
-      ref={containerRef}
-      onScroll={handleScroll}
-      className={`overflow-auto ${className}`}
-      role="list"
-      aria-rowcount={items.length}
-    >
-      <div style={{ height: totalHeight, position: 'relative' }}>
-        <div style={{ transform: `translateY(${offsetY}px)` }}>
-          {visibleItems.map((item, index) => (
-            <div
-              key={startIndex + index}
-              style={{ height: itemHeight }}
-              role="listitem"
-              aria-rowindex={startIndex + index + 1}
-            >
-              {renderItem(item, startIndex + index)}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}) as <T>(props: VirtualListProps<T>) => React.ReactElement;
-
-// Specialized virtual list for logs
-interface LogEntry {
-  id?: string;
-  timestamp: string;
-  type: 'info' | 'success' | 'error' | 'warning';
-  message: string;
-}
-
-interface VirtualLogListProps {
-  logs: LogEntry[];
-  className?: string;
-}
-
-const LOG_TYPE_STYLES: Record<LogEntry['type'], string> = {
-  info: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20',
-  success: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20',
-  error: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20',
-  warning: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20',
-};
-
-const LOG_TYPE_LABELS: Record<LogEntry['type'], string> = {
-  info: 'INFO',
-  success: 'OK',
-  error: 'ERROR',
-  warning: 'WARN',
-};
-
-export const VirtualLogList = memo(function VirtualLogList({
-  logs,
-  className = '',
-}: VirtualLogListProps) {
-  const renderLog = useCallback((log: LogEntry, index: number) => (
-    <div
-      className={`flex items-start gap-3 px-4 py-2 border-b border-gray-100 dark:border-slate-700/50 
-                  hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? '' : 'bg-gray-50/50 dark:bg-slate-800/30'}`}
-    >
-      <span className="text-xs text-gray-400 dark:text-slate-500 font-mono whitespace-nowrap">
-        {log.timestamp}
-      </span>
-      <span 
-        className={`text-xs font-medium px-2 py-0.5 rounded ${LOG_TYPE_STYLES[log.type]}`}
-      >
-        {LOG_TYPE_LABELS[log.type]}
-      </span>
-      <span className="text-sm text-gray-700 dark:text-slate-300 flex-1">
-        {log.message}
-      </span>
-    </div>
-  ), []);
-
-  return (
-    <VirtualList
-      items={logs}
-      itemHeight={44}
-      renderItem={renderLog}
-      overscan={10}
-      className={className}
-      emptyMessage="No logs to display"
-    />
-  );
-});
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from 'react';interface VirtualListProps<T> {  items: T[];  itemHeight: number;  renderItem: (item: T, index: number) => React.ReactNode;  overscan?: number;  className?: string;  emptyMessage?: string;}export const VirtualList = memo(function VirtualList<T>({  items,  itemHeight,  renderItem,  overscan = 5,  className = '',  emptyMessage = 'No items to display',}: VirtualListProps<T>) {  const containerRef = useRef<HTMLDivElement>(null);  const [scrollTop, setScrollTop] = useState(0);  const [containerHeight, setContainerHeight] = useState(0);  const { startIndex, visibleItems, offsetY } = useMemo(() => {    const start = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);    const visibleCount = Math.ceil(containerHeight / itemHeight);    const end = Math.min(items.length, start + visibleCount + overscan * 2);    return {      startIndex: start,      visibleItems: items.slice(start, end),      offsetY: start * itemHeight,    };  }, [scrollTop, containerHeight, itemHeight, items, overscan]);  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {    setScrollTop(e.currentTarget.scrollTop);  }, []);  useEffect(() => {    const container = containerRef.current;    if (!container) return;    const resizeObserver = new ResizeObserver((entries) => {      for (const entry of entries) {        setContainerHeight(entry.contentRect.height);      }    });    resizeObserver.observe(container);    setContainerHeight(container.clientHeight);    return () => resizeObserver.disconnect();  }, []);  if (items.length === 0) {    return (      <div         className={`flex items-center justify-center h-full text-gray-500 dark:text-slate-400 ${className}`}        role="status"      >        {emptyMessage}      </div>    );  }  const totalHeight = items.length * itemHeight;  return (    <div      ref={containerRef}      onScroll={handleScroll}      className={`overflow-auto ${className}`}      role="list"      aria-rowcount={items.length}    >      <div style={{ height: totalHeight, position: 'relative' }}>        <div style={{ transform: `translateY(${offsetY}px)` }}>          {visibleItems.map((item, index) => (            <div              key={startIndex + index}              style={{ height: itemHeight }}              role="listitem"              aria-rowindex={startIndex + index + 1}            >              {renderItem(item, startIndex + index)}            </div>          ))}        </div>      </div>    </div>  );}) as <T>(props: VirtualListProps<T>) => React.ReactElement;interface LogEntry {  id?: string;  timestamp: string;  type: 'info' | 'success' | 'error' | 'warning';  message: string;}interface VirtualLogListProps {  logs: LogEntry[];  className?: string;}const LOG_TYPE_STYLES: Record<LogEntry['type'], string> = {  info: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20',  success: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20',  error: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20',  warning: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20',};const LOG_TYPE_LABELS: Record<LogEntry['type'], string> = {  info: 'INFO',  success: 'OK',  error: 'ERROR',  warning: 'WARN',};export const VirtualLogList = memo(function VirtualLogList({  logs,  className = '',}: VirtualLogListProps) {  const renderLog = useCallback((log: LogEntry, index: number) => (    <div      className={`flex items-start gap-3 px-4 py-2 border-b border-gray-100 dark:border-slate-700/50                   hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${index % 2 === 0 ? '' : 'bg-gray-50/50 dark:bg-slate-800/30'}`}    >      <span className="text-xs text-gray-400 dark:text-slate-500 font-mono whitespace-nowrap">        {log.timestamp}      </span>      <span         className={`text-xs font-medium px-2 py-0.5 rounded ${LOG_TYPE_STYLES[log.type]}`}      >        {LOG_TYPE_LABELS[log.type]}      </span>      <span className="text-sm text-gray-700 dark:text-slate-300 flex-1">        {log.message}      </span>    </div>  ), []);  return (    <VirtualList      items={logs}      itemHeight={44}      renderItem={renderLog}      overscan={10}      className={className}      emptyMessage="No logs to display"    />  );});

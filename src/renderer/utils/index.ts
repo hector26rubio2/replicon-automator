@@ -1,4 +1,1 @@
-/**
- * Renderer Utils Barrel
- */
-export * from './status';
+export * from './status';

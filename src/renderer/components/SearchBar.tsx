@@ -1,256 +1,1 @@
-/**
- * Search Bar Component
- * Search and filter functionality for tables
- */
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useTranslation } from '@/i18n';
-
-interface SearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-  autoFocus?: boolean;
-  debounce?: number;
-}
-
-export function SearchBar({
-  value,
-  onChange,
-  placeholder,
-  className = '',
-  autoFocus = false,
-  debounce = 300,
-}: SearchBarProps) {
-  const [localValue, setLocalValue] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const debounceTimeout = useRef<ReturnType<typeof setTimeout>>();
-  const { t } = useTranslation();
-
-  // Sync external value changes
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
-
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setLocalValue(newValue);
-    
-    // Debounce the onChange callback
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-    
-    debounceTimeout.current = setTimeout(() => {
-      onChange(newValue);
-    }, debounce);
-  }, [onChange, debounce]);
-
-  const handleClear = useCallback(() => {
-    setLocalValue('');
-    onChange('');
-    inputRef.current?.focus();
-  }, [onChange]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      handleClear();
-    }
-  }, [handleClear]);
-
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-    };
-  }, []);
-
-  return (
-    <div className={`relative ${className}`}>
-      {/* Search Icon */}
-      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-        <svg 
-          className="w-4 h-4 text-gray-400 dark:text-slate-500" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-          />
-        </svg>
-      </div>
-      
-      <input
-        ref={inputRef}
-        type="text"
-        value={localValue}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder || t('common.search') + '...'}
-        autoFocus={autoFocus}
-        className="w-full pl-10 pr-10 py-2 text-sm border border-gray-200 dark:border-slate-600 
-                   rounded-lg bg-white dark:bg-dark-100 text-gray-900 dark:text-white
-                   placeholder-gray-400 dark:placeholder-slate-500
-                   focus:ring-2 focus:ring-primary-500 focus:border-transparent
-                   transition-all duration-200"
-        aria-label={t('common.search')}
-      />
-      
-      {/* Clear Button */}
-      {localValue && (
-        <button
-          onClick={handleClear}
-          className="absolute inset-y-0 right-0 flex items-center pr-3 
-                     text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300
-                     transition-colors"
-          aria-label={t('common.clear')}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      )}
-    </div>
-  );
-}
-
-/**
- * Table Filter Component
- * Advanced filtering for CSV/Log tables
- */
-interface FilterOption {
-  id: string;
-  label: string;
-  value: string;
-}
-
-interface TableFilterProps {
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  filters?: FilterOption[];
-  activeFilter?: string;
-  onFilterChange?: (filterId: string) => void;
-  resultCount?: number;
-  totalCount?: number;
-  className?: string;
-}
-
-export function TableFilter({
-  searchValue,
-  onSearchChange,
-  filters,
-  activeFilter,
-  onFilterChange,
-  resultCount,
-  totalCount,
-  className = '',
-}: TableFilterProps) {
-  const { t } = useTranslation();
-
-  return (
-    <div className={`flex items-center gap-4 ${className}`}>
-      {/* Search */}
-      <SearchBar 
-        value={searchValue} 
-        onChange={onSearchChange}
-        className="flex-1 max-w-md"
-      />
-      
-      {/* Filters */}
-      {filters && filters.length > 0 && onFilterChange && (
-        <div className="flex items-center gap-2">
-          {filters.map(filter => (
-            <button
-              key={filter.id}
-              onClick={() => onFilterChange(filter.id)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors
-                         ${activeFilter === filter.id
-                           ? 'bg-primary-500 text-white'
-                           : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-dark-100'
-                         }`}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
-      )}
-      
-      {/* Result Count */}
-      {resultCount !== undefined && totalCount !== undefined && (
-        <div className="text-sm text-gray-500 dark:text-slate-400">
-          {resultCount === totalCount 
-            ? `${totalCount} ${t('csv.addRow').toLowerCase()}`
-            : `${resultCount} / ${totalCount}`
-          }
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * useTableFilter hook - Manages filter state for tables
- */
-interface UseTableFilterOptions<T> {
-  data: T[];
-  searchFields: (keyof T)[];
-  initialFilter?: string;
-}
-
-interface UseTableFilterResult<T> {
-  filteredData: T[];
-  searchValue: string;
-  setSearchValue: (value: string) => void;
-  activeFilter: string;
-  setActiveFilter: (filter: string) => void;
-  resultCount: number;
-  totalCount: number;
-  clearFilters: () => void;
-}
-
-export function useTableFilter<T extends Record<string, unknown>>({
-  data,
-  searchFields,
-  initialFilter = 'all',
-}: UseTableFilterOptions<T>): UseTableFilterResult<T> {
-  const [searchValue, setSearchValue] = useState('');
-  const [activeFilter, setActiveFilter] = useState(initialFilter);
-
-  const filteredData = React.useMemo(() => {
-    if (!searchValue.trim()) return data;
-    
-    const searchLower = searchValue.toLowerCase();
-    
-    return data.filter(item => {
-      return searchFields.some(field => {
-        const value = item[field];
-        if (value === null || value === undefined) return false;
-        return String(value).toLowerCase().includes(searchLower);
-      });
-    });
-  }, [data, searchValue, searchFields]);
-
-  const clearFilters = useCallback(() => {
-    setSearchValue('');
-    setActiveFilter(initialFilter);
-  }, [initialFilter]);
-
-  return {
-    filteredData,
-    searchValue,
-    setSearchValue,
-    activeFilter,
-    setActiveFilter,
-    resultCount: filteredData.length,
-    totalCount: data.length,
-    clearFilters,
-  };
-}
-
-export default SearchBar;
+import React, { useState, useCallback, useEffect, useRef } from 'react';import { useTranslation } from '@/i18n';interface SearchBarProps {  value: string;  onChange: (value: string) => void;  placeholder?: string;  className?: string;  autoFocus?: boolean;  debounce?: number;}export function SearchBar({  value,  onChange,  placeholder,  className = '',  autoFocus = false,  debounce = 300,}: SearchBarProps) {  const [localValue, setLocalValue] = useState(value);  const inputRef = useRef<HTMLInputElement>(null);  const debounceTimeout = useRef<ReturnType<typeof setTimeout>>();  const { t } = useTranslation();  useEffect(() => {    setLocalValue(value);  }, [value]);  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {    const newValue = e.target.value;    setLocalValue(newValue);    if (debounceTimeout.current) {      clearTimeout(debounceTimeout.current);    }    debounceTimeout.current = setTimeout(() => {      onChange(newValue);    }, debounce);  }, [onChange, debounce]);  const handleClear = useCallback(() => {    setLocalValue('');    onChange('');    inputRef.current?.focus();  }, [onChange]);  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {    if (e.key === 'Escape') {      handleClear();    }  }, [handleClear]);  useEffect(() => {    return () => {      if (debounceTimeout.current) {        clearTimeout(debounceTimeout.current);      }    };  }, []);  return (    <div className={`relative ${className}`}>      {}      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">        <svg           className="w-4 h-4 text-gray-400 dark:text-slate-500"           fill="none"           stroke="currentColor"           viewBox="0 0 24 24"        >          <path             strokeLinecap="round"             strokeLinejoin="round"             strokeWidth={2}             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"           />        </svg>      </div>      <input        ref={inputRef}        type="text"        value={localValue}        onChange={handleChange}        onKeyDown={handleKeyDown}        placeholder={placeholder || t('common.search') + '...'}        autoFocus={autoFocus}        className="w-full pl-10 pr-10 py-2 text-sm border border-gray-200 dark:border-slate-600                    rounded-lg bg-white dark:bg-dark-100 text-gray-900 dark:text-white                   placeholder-gray-400 dark:placeholder-slate-500                   focus:ring-2 focus:ring-primary-500 focus:border-transparent                   transition-all duration-200"        aria-label={t('common.search')}      />      {}      {localValue && (        <button          onClick={handleClear}          className="absolute inset-y-0 right-0 flex items-center pr-3                      text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300                     transition-colors"          aria-label={t('common.clear')}        >          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />          </svg>        </button>      )}    </div>  );}interface FilterOption {  id: string;  label: string;  value: string;}interface TableFilterProps {  searchValue: string;  onSearchChange: (value: string) => void;  filters?: FilterOption[];  activeFilter?: string;  onFilterChange?: (filterId: string) => void;  resultCount?: number;  totalCount?: number;  className?: string;}export function TableFilter({  searchValue,  onSearchChange,  filters,  activeFilter,  onFilterChange,  resultCount,  totalCount,  className = '',}: TableFilterProps) {  const { t } = useTranslation();  return (    <div className={`flex items-center gap-4 ${className}`}>      {}      <SearchBar         value={searchValue}         onChange={onSearchChange}        className="flex-1 max-w-md"      />      {}      {filters && filters.length > 0 && onFilterChange && (        <div className="flex items-center gap-2">          {filters.map(filter => (            <button              key={filter.id}              onClick={() => onFilterChange(filter.id)}              className={`px-3 py-1.5 text-sm rounded-lg transition-colors                         ${activeFilter === filter.id                           ? 'bg-primary-500 text-white'                           : 'bg-gray-100 dark:bg-dark-200 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-dark-100'                         }`}            >              {filter.label}            </button>          ))}        </div>      )}      {}      {resultCount !== undefined && totalCount !== undefined && (        <div className="text-sm text-gray-500 dark:text-slate-400">          {resultCount === totalCount             ? `${totalCount} ${t('csv.addRow').toLowerCase()}`            : `${resultCount} / ${totalCount}`          }        </div>      )}    </div>  );}interface UseTableFilterOptions<T> {  data: T[];  searchFields: (keyof T)[];  initialFilter?: string;}interface UseTableFilterResult<T> {  filteredData: T[];  searchValue: string;  setSearchValue: (value: string) => void;  activeFilter: string;  setActiveFilter: (filter: string) => void;  resultCount: number;  totalCount: number;  clearFilters: () => void;}export function useTableFilter<T extends Record<string, unknown>>({  data,  searchFields,  initialFilter = 'all',}: UseTableFilterOptions<T>): UseTableFilterResult<T> {  const [searchValue, setSearchValue] = useState('');  const [activeFilter, setActiveFilter] = useState(initialFilter);  const filteredData = React.useMemo(() => {    if (!searchValue.trim()) return data;    const searchLower = searchValue.toLowerCase();    return data.filter(item => {      return searchFields.some(field => {        const value = item[field];        if (value === null || value === undefined) return false;        return String(value).toLowerCase().includes(searchLower);      });    });  }, [data, searchValue, searchFields]);  const clearFilters = useCallback(() => {    setSearchValue('');    setActiveFilter(initialFilter);  }, [initialFilter]);  return {    filteredData,    searchValue,    setSearchValue,    activeFilter,    setActiveFilter,    resultCount: filteredData.length,    totalCount: data.length,    clearFilters,  };}export default SearchBar;

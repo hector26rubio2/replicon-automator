@@ -1,57 +1,1 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-
-interface CSVEditorState {
-  monthOffset: -1 | 0 | 1;
-  setMonthOffset: (offset: -1 | 0 | 1) => void;
-  defaultAccount: string;
-  setDefaultAccount: (account: string) => void;
-  defaultProject: string;
-  setDefaultProject: (project: string) => void;
-  showPreview: boolean;
-  setShowPreview: (show: boolean) => void;
-  showCsvOutput: boolean;
-  setShowCsvOutput: (show: boolean) => void;
-  _hasHydrated: boolean;
-  setHasHydrated: (state: boolean) => void;
-}
-
-export const useCSVEditorStore = create<CSVEditorState>()(
-  persist(
-    (set) => ({
-      monthOffset: 0,
-      setMonthOffset: (offset) => set({ monthOffset: offset }),
-      defaultAccount: '',
-      setDefaultAccount: (account) => set({ defaultAccount: account, defaultProject: '' }),
-      defaultProject: '',
-      setDefaultProject: (project) => set({ defaultProject: project }),
-      showPreview: false,
-      setShowPreview: (show) => set({ showPreview: show }),
-      showCsvOutput: false,
-      setShowCsvOutput: (show) => set({ showCsvOutput: show }),
-      _hasHydrated: false,
-      setHasHydrated: (state) => set({ _hasHydrated: state }),
-    }),
-    {
-      name: 'csv-editor-state',
-      storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
-      },
-      partialize: (state) => ({
-        monthOffset: state.monthOffset,
-        defaultAccount: state.defaultAccount,
-        defaultProject: state.defaultProject,
-      }),
-    }
-  )
-);
-
-export const SPECIAL_ACCOUNT_CODES = ['BH', 'H', 'F', 'FDS', 'ND'];
-
-/**
- * Check if an account code is a special account
- */
-export function isSpecialAccount(code: string): boolean {
-  return SPECIAL_ACCOUNT_CODES.includes(code.toUpperCase());
-}
+import { create } from 'zustand';import { persist, createJSONStorage } from 'zustand/middleware';interface CSVEditorState {  monthOffset: -1 | 0 | 1;  setMonthOffset: (offset: -1 | 0 | 1) => void;  defaultAccount: string;  setDefaultAccount: (account: string) => void;  defaultProject: string;  setDefaultProject: (project: string) => void;  showPreview: boolean;  setShowPreview: (show: boolean) => void;  showCsvOutput: boolean;  setShowCsvOutput: (show: boolean) => void;  _hasHydrated: boolean;  setHasHydrated: (state: boolean) => void;}export const useCSVEditorStore = create<CSVEditorState>()(  persist(    (set) => ({      monthOffset: 0,      setMonthOffset: (offset) => set({ monthOffset: offset }),      defaultAccount: '',      setDefaultAccount: (account) => set({ defaultAccount: account, defaultProject: '' }),      defaultProject: '',      setDefaultProject: (project) => set({ defaultProject: project }),      showPreview: false,      setShowPreview: (show) => set({ showPreview: show }),      showCsvOutput: false,      setShowCsvOutput: (show) => set({ showCsvOutput: show }),      _hasHydrated: false,      setHasHydrated: (state) => set({ _hasHydrated: state }),    }),    {      name: 'csv-editor-state',      storage: createJSONStorage(() => localStorage),      onRehydrateStorage: () => (state) => {        state?.setHasHydrated(true);      },      partialize: (state) => ({        monthOffset: state.monthOffset,        defaultAccount: state.defaultAccount,        defaultProject: state.defaultProject,      }),    }  ));export const SPECIAL_ACCOUNT_CODES = ['BH', 'H', 'F', 'FDS', 'ND'];export function isSpecialAccount(code: string): boolean {  return SPECIAL_ACCOUNT_CODES.includes(code.toUpperCase());}
