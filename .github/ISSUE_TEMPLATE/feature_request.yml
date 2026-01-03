@@ -1,0 +1,61 @@
+name: 🚀 Feature Request
+description: Sugerir una nueva funcionalidad
+title: "[FEATURE] "
+labels: ["type: feature"]
+assignees:
+  - hector26rubio2
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ¡Gracias por sugerir una mejora! 💡
+        
+        Tus ideas son fundamentales para el desarrollo del proyecto.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema a Resolver
+      description: ¿Qué problema o necesidad resolvería esta funcionalidad?
+      placeholder: |
+        Actualmente es difícil/imposible hacer X porque...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución Propuesta
+      description: ¿Cómo imaginas que funcionaría esta característica?
+      placeholder: |
+        La aplicación debería permitir...
+        Por ejemplo, podría haber un botón que...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: ¿Hay otras formas de resolver este problema?
+      placeholder: |
+        También se podría...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad Estimada
+      description: Desde tu perspectiva, ¿qué tan importante es esto?
+      options:
+        - Crítico - Bloquea mi trabajo
+        - Alto - Muy útil
+        - Medio - Sería bueno tenerlo
+        - Bajo - Nice to have
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Contexto Adicional
+      description: Screenshots, ejemplos de otras apps, mockups, etc.

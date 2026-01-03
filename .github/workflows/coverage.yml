@@ -1,0 +1,95 @@
+name: Test Coverage Report
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'test/**'
+  workflow_dispatch:
+
+# Cancelar ejecuciones duplicadas
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22.14.0'
+
+jobs:
+  coverage:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      # Reusar caché de node_modules
+      - name: Cache node modules
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: npm ci
+      
+      - name: Run tests with coverage
+        run: npm run test:coverage
+      
+      - name: Generate coverage badge
+        run: |
+          COVERAGE=$(cat coverage/coverage-final.json | jq -r '.total.lines.pct' 2>/dev/null || echo "0")
+          COLOR=$(echo "$COVERAGE < 50" | bc -l | grep -q 1 && echo "red" || echo "$COVERAGE < 80" | bc -l | grep -q 1 && echo "yellow" || echo "brightgreen")
+          
+          mkdir -p .github/badges
+          curl -s "https://img.shields.io/badge/coverage-${COVERAGE}%25-${COLOR}" > .github/badges/coverage.svg
+      
+      - name: Upload coverage to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p docs-site/coverage
+          cp -r coverage/* docs-site/coverage/
+      
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = JSON.parse(fs.readFileSync('coverage/coverage-final.json', 'utf8'));
+            
+            const total = coverage.total;
+            const body = `## 📊 Test Coverage Report
+            
+            | Metric | Coverage | Status |
+            |--------|----------|--------|
+            | Lines | ${total.lines.pct}% | ${total.lines.pct >= 80 ? '✅' : '⚠️'} |
+            | Statements | ${total.statements.pct}% | ${total.statements.pct >= 80 ? '✅' : '⚠️'} |
+            | Functions | ${total.functions.pct}% | ${total.functions.pct >= 80 ? '✅' : '⚠️'} |
+            | Branches | ${total.branches.pct}% | ${total.branches.pct >= 80 ? '✅' : '⚠️'} |
+            
+            [Ver reporte completo de coverage](https://hector26rubio2.github.io/replicon-automator/coverage/)
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

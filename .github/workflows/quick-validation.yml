@@ -1,0 +1,136 @@
+name: Quick Validation (Skip CI)
+
+# Este workflow se ejecuta ANTES del build completo para validar rápidamente
+# y cancelar builds innecesarios. Ahorra ~10-15 minutos por build fallido.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'test/**'
+      - 'package.json'
+      - 'tsconfig*.json'
+
+# Cancelar ejecuciones duplicadas
+concurrency:
+  group: quick-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22.14.0'
+
+jobs:
+  # Job ultra-rápido: solo lint y typecheck (tarda ~30 segundos)
+  quick-check:
+    name: Quick Lint & TypeCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5  # Falla rápido si algo está mal
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      # Solo instalar dependencias de desarrollo (más rápido)
+      - name: Install dev dependencies only
+        run: npm ci --only=dev
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: TypeCheck
+        run: npm run typecheck
+      
+      - name: Check commit message format
+        if: github.event_name == 'pull_request'
+        run: |
+          # Validar que los commits sigan conventional commits
+          COMMITS=$(git log --pretty=format:"%s" origin/main..HEAD)
+          
+          echo "Validando mensajes de commits:"
+          echo "$COMMITS"
+          
+          if ! echo "$COMMITS" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?!?:'; then
+            echo "❌ ERROR: Los commits deben seguir el formato Conventional Commits"
+            echo "Ejemplos válidos: feat(auth): add login, fix: resolve crash, docs: update README"
+            exit 1
+          fi
+          
+          echo "✅ Todos los commits son válidos"
+  
+  # Job para verificar que no hay dependencias de seguridad críticas
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Run npm audit
+        run: |
+          # Solo fallar en vulnerabilidades críticas/altas
+          npm audit --audit-level=high || true
+          
+          # Contar vulnerabilidades críticas
+          CRITICAL=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.critical // 0')
+          HIGH=$(npm audit --json 2>/dev/null | jq '.metadata.vulnerabilities.high // 0')
+          
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "❌ ERROR: $CRITICAL vulnerabilidades CRÍTICAS encontradas"
+            exit 1
+          fi
+          
+          if [ "$HIGH" -gt 5 ]; then
+            echo "⚠️  ADVERTENCIA: $HIGH vulnerabilidades ALTAS encontradas"
+            echo "Considera actualizar las dependencias"
+          fi
+          
+          echo "✅ Audit de seguridad completado"
+  
+  # Job para validar el tamaño del bundle (prevenir builds gigantes)
+  bundle-size-check:
+    name: Check Bundle Size
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Check package.json size
+        run: |
+          # Verificar que no haya dependencias excesivas
+          DEPS_COUNT=$(jq '.dependencies | length' package.json)
+          DEV_DEPS_COUNT=$(jq '.devDependencies | length' package.json)
+          
+          echo "📦 Dependencias: $DEPS_COUNT"
+          echo "🔧 Dev Dependencies: $DEV_DEPS_COUNT"
+          
+          if [ "$DEPS_COUNT" -gt 50 ]; then
+            echo "⚠️  ADVERTENCIA: Muchas dependencias de producción ($DEPS_COUNT)"
+            echo "Considera eliminar dependencias innecesarias"
+          fi
+          
+          # Verificar que no haya archivos grandes en el repo
+          LARGE_FILES=$(find . -type f -size +10M ! -path "./.git/*" ! -path "./node_modules/*" ! -path "./playwright-bin/*" ! -path "./release/*" || true)
+          
+          if [ -n "$LARGE_FILES" ]; then
+            echo "❌ ERROR: Archivos grandes detectados en el repositorio:"
+            echo "$LARGE_FILES"
+            echo "Usa Git LFS para archivos binarios grandes"
+            exit 1
+          fi
+          
+          echo "✅ Tamaño de bundle OK"

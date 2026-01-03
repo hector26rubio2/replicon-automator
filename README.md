@@ -2,12 +2,14 @@
 
 🚀 **Modern desktop app to automate time entry in Replicon**
 
-[![Version](https://img.shields.io/github/v/release/hector-rubio-tabares/replicon-automator?label=version&color=blue)](https://github.com/hector-rubio-tabares/replicon-automator/releases/latest)
+[![Version](https://img.shields.io/github/v/release/hector26rubio2/replicon-automator?label=version&color=blue)](https://github.com/hector26rubio2/replicon-automator/releases/latest)
+[![CI/CD](https://github.com/hector26rubio2/replicon-automator/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/hector26rubio2/replicon-automator/actions/workflows/ci-cd.yml)
+[![CodeQL](https://github.com/hector26rubio2/replicon-automator/actions/workflows/codeql.yml/badge.svg)](https://github.com/hector26rubio2/replicon-automator/actions/workflows/codeql.yml)
 [![Node](https://img.shields.io/badge/node-22.14.0-green.svg)](https://nodejs.org/)
 [![Electron](https://img.shields.io/badge/electron-39.2.7-purple.svg)](https://www.electronjs.org/)
-[![Tests](https://img.shields.io/badge/tests-160%20passing-success.svg)](https://github.com/hector-rubio-tabares/replicon-automator)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Code Quality](https://img.shields.io/badge/quality-9.9%2F10-brightgreen.svg)](https://github.com/hector-rubio-tabares/replicon-automator)
+[![License](https://img.shields.io/github/license/hector26rubio2/replicon-automator)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://hector26rubio2.github.io/replicon-automator/)
 
 ## ✨ Features
 
@@ -31,9 +33,19 @@
 
 **That's it!** No Node.js, npm, or additional software required.
 
----
-
 ## 🛠️ For Developers
+
+> **💎 GitHub Free Tier Optimized:** Este proyecto usa ÚNICAMENTE recursos gratuitos de GitHub.  
+> Ver [`docs/GITHUB_FREE_OPTIMIZATION.md`](docs/GITHUB_FREE_OPTIMIZATION.md) para detalles completos.
+
+### Quick Stats
+
+| Métrica | Valor |
+|---------|-------|
+| CI/CD Build Time | ~8 min (70% optimizado) |
+| Monthly Actions Usage | ~136 min/2000 (7%) |
+| Cache Hit Rate | ~85% |
+| Free Features | Pages, CodeQL, Dependabot |
 
 ### Requirements
 

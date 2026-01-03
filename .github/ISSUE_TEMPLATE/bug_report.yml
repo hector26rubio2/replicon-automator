@@ -1,0 +1,88 @@
+name: 🐛 Bug Report
+description: Reportar un error en la aplicación
+title: "[BUG] "
+labels: ["type: bug"]
+assignees:
+  - hector26rubio2
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Gracias por reportar este bug 🙏
+        
+        Por favor completa la siguiente información para ayudarnos a reproducir y corregir el error.
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión de la Aplicación
+      description: ¿Qué versión de Replicon Automator estás usando?
+      placeholder: "Ej: v3.5.0 (puedes verlo en Ayuda → Acerca de)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del Problema
+      description: Describe claramente qué esperabas que pasara y qué pasó realmente
+      placeholder: |
+        **Comportamiento esperado:**
+        La aplicación debería...
+        
+        **Comportamiento actual:**
+        En cambio, la aplicación...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para Reproducir
+      description: Cómo podemos reproducir el error
+      placeholder: |
+        1. Abrir la aplicación
+        2. Ir a la sección '...'
+        3. Hacer clic en '...'
+        4. Ver el error
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs de Error
+      description: Si hay mensajes de error en los logs, pégalos aquí (Ver → Logs)
+      render: shell
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema Operativo
+      options:
+        - Windows 11
+        - Windows 10
+        - Windows 8.1
+        - Otro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frecuencia del Problema
+      description: ¿Con qué frecuencia ocurre este error?
+      options:
+        - Siempre (100%)
+        - Frecuentemente (>50%)
+        - A veces (20-50%)
+        - Rara vez (<20%)
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Contexto Adicional
+      description: ¿Algo más que debamos saber?
+      placeholder: Screenshots, videos, configuración especial, etc.

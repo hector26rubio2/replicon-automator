@@ -64,6 +64,7 @@ jobs:
       # Cache node_modules para ahorrar ~2 minutos
       - name: Cache node modules
         uses: actions/cache@v4
+        id: cache-node-modules
         with:
           path: |
             ~/.npm
@@ -72,16 +73,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       
-      # Cache Playwright browsers para ahorrar ~1 minuto
+      # Cache Playwright browsers para ahorrar ~1 minuto (500MB aprox)
       - name: Cache Playwright browsers
         uses: actions/cache@v4
+        id: cache-playwright
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
       
+      # Cache Wine para ahorrar ~1-2 minutos en instalación
+      - name: Cache Wine installation
+        uses: actions/cache@v4
+        id: cache-wine
+        with:
+          path: |
+            /opt/wine-stable
+            ~/.wine
+          key: ${{ runner.os }}-wine-9.0
+          restore-keys: |
+            ${{ runner.os }}-wine-
+      
       - name: Install Wine and dependencies
+        if: steps.cache-wine.outputs.cache-hit != 'true'
         run: |
           sudo dpkg --add-architecture i386
           sudo mkdir -pm755 /etc/apt/keyrings
@@ -91,9 +106,11 @@ jobs:
           sudo apt-get install -y --install-recommends winehq-stable
       
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
       
       - name: Install Playwright browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
       
       - name: Run quality checks
@@ -106,6 +123,16 @@ jobs:
       
       - name: Copy Playwright binaries
         run: npm run copy-playwright-bins
+      
+      # CRÍTICO: Verificar que los binarios se copiaron correctamente
+      - name: Verify Playwright binaries
+        run: |
+          if [ ! -d "playwright-bin/chromium-"* ]; then
+            echo "❌ ERROR: Playwright binaries not found in playwright-bin/"
+            exit 1
+          fi
+          echo "✅ Playwright binaries found:"
+          ls -lah playwright-bin/
       
       - name: Package application (Windows)
         run: npx electron-builder --win --x64 --publish never
