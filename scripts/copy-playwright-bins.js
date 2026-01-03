@@ -1,13 +1,30 @@
 /**
  * Script para copiar binarios de Playwright antes del build
- * Copia chromium desde %LOCALAPPDATA%\ms-playwright a un directorio local
+ * Copia chromium desde la cache de Playwright a un directorio local
+ * Soporta Windows, Linux y macOS
  */
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const SOURCE_DIR = path.join(os.homedir(), 'AppData', 'Local', 'ms-playwright');
+// Detectar el directorio de Playwright según el sistema operativo
+function getPlaywrightDir() {
+  const platform = os.platform();
+  const homeDir = os.homedir();
 
+  if (platform === 'win32') {
+    // Windows: %LOCALAPPDATA%\ms-playwright
+    return path.join(homeDir, 'AppData', 'Local', 'ms-playwright');
+  } else if (platform === 'darwin') {
+    // macOS: ~/Library/Caches/ms-playwright
+    return path.join(homeDir, 'Library', 'Caches', 'ms-playwright');
+  } else {
+    // Linux: ~/.cache/ms-playwright
+    return path.join(homeDir, '.cache', 'ms-playwright');
+  }
+}
+
+const SOURCE_DIR = getPlaywrightDir();
 const TARGET_DIR = path.join(__dirname, '..', 'playwright-bin');
 
 function copyDirRecursive(src, dest) {
