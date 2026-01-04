@@ -237,7 +237,7 @@ describe('ErrorBoundary', () => {
   describe('getDerivedStateFromError', () => {
     it('should set hasError to true when error occurs', () => {
       const derivedState = ErrorBoundary.getDerivedStateFromError(new Error('test'));
-      
+
       expect(derivedState).toEqual({
         hasError: true,
         error: expect.objectContaining({ message: 'test' }),
