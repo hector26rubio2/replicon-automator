@@ -173,7 +173,7 @@ jobs:
               
               <div class="badges">
                 <span class="badge">⚡ Electron 39</span>
-                <span class="badge">⚛️ React 19</span>
+                <span class="badge">⚛️ React 18</span>
                 <span class="badge">📘 TypeScript</span>
                 <span class="badge">🎭 Playwright</span>
               </div>
