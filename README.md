@@ -5,11 +5,11 @@
 [![Version](https://img.shields.io/github/v/release/hector26rubio2/replicon-automator?label=version&color=blue)](https://github.com/hector26rubio2/replicon-automator/releases/latest)
 [![CI/CD](https://github.com/hector26rubio2/replicon-automator/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/hector26rubio2/replicon-automator/actions/workflows/ci-cd.yml)
 [![CodeQL](https://github.com/hector26rubio2/replicon-automator/actions/workflows/codeql.yml/badge.svg)](https://github.com/hector26rubio2/replicon-automator/actions/workflows/codeql.yml)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://hector26rubio2.github.io/replicon-automator/)
 [![Node](https://img.shields.io/badge/node-22.14.0-green.svg)](https://nodejs.org/)
 [![Electron](https://img.shields.io/badge/electron-39.2.7-purple.svg)](https://www.electronjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/github/license/hector26rubio2/replicon-automator)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://hector26rubio2.github.io/replicon-automator/)
 
 ## ✨ Features
 

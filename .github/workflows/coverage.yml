@@ -99,8 +99,6 @@ jobs:
             | Statements | ${total.statements.pct}% | ${total.statements.pct >= 80 ? '✅' : '⚠️'} |
             | Functions | ${total.functions.pct}% | ${total.functions.pct >= 80 ? '✅' : '⚠️'} |
             | Branches | ${total.branches.pct}% | ${total.branches.pct >= 80 ? '✅' : '⚠️'} |
-            
-            [Ver reporte completo de coverage](https://hector26rubio2.github.io/replicon-automator/coverage/)
             `;
             
             github.rest.issues.createComment({
