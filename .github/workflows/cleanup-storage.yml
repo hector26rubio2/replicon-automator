@@ -4,14 +4,17 @@ name: Cleanup Storage (Free Tier Optimization)
 # para garantizar $0 de consumo de storage en cuentas gratuitas
 
 on:
-  # Ejecutar diariamente a las 2 AM UTC
+  # Ejecutar cada 6 horas para limpieza agresiva
   schedule:
-    - cron: '0 2 * * *'
-  # Ejecutar después de cada release
+    - cron: '0 */6 * * *'
+  # Ejecutar después de cada workflow completado
   workflow_run:
-    workflows: ["CI/CD Pipeline"]
+    workflows: ["CI/CD Pipeline", "Test Coverage Report"]
     types:
       - completed
+  # Ejecutar automáticamente después de cada push
+  push:
+    branches: [main]
   # Permitir ejecución manual
   workflow_dispatch:
 
@@ -24,12 +27,13 @@ jobs:
     name: Delete Old Artifacts
     runs-on: ubuntu-latest
     steps:
-      - name: Delete artifacts older than 1 day
+      - name: Delete artifacts (all if manual, old if automatic)
         uses: actions/github-script@v7
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const isManual = context.eventName === 'workflow_dispatch';
             
             // Obtener todos los artifacts
             const artifacts = await github.rest.actions.listArtifactsForRepo({
@@ -38,13 +42,16 @@ jobs:
               per_page: 100
             });
             
-            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
             let deletedCount = 0;
             
             for (const artifact of artifacts.data.artifacts) {
               const createdAt = new Date(artifact.created_at);
               
-              if (createdAt < oneDayAgo) {
+              // Si es manual, borrar TODO. Si es automático, solo > 6 horas
+              const shouldDelete = isManual || createdAt < sixHoursAgo;
+              
+              if (shouldDelete) {
                 console.log(`🗑️  Eliminando artifact: ${artifact.name} (${artifact.size_in_bytes} bytes, creado: ${artifact.created_at})`);
                 
                 await github.rest.actions.deleteArtifact({
@@ -57,6 +64,9 @@ jobs:
               }
             }
             
+            if (isManual) {
+              console.log(`🚨 LIMPIEZA MANUAL: Todos los artifacts eliminados`);
+            }
             console.log(`✅ Artifacts eliminados: ${deletedCount}`);
             console.log(`📊 Artifacts restantes: ${artifacts.data.total_count - deletedCount}`);
 
@@ -64,12 +74,13 @@ jobs:
     name: Delete Unused Caches
     runs-on: ubuntu-latest
     steps:
-      - name: Cleanup old and large caches
+      - name: Cleanup caches (all if manual, old if automatic)
         uses: actions/github-script@v7
         with:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
+            const isManual = context.eventName === 'workflow_dispatch';
             
             // Obtener todos los caches
             const caches = await github.rest.actions.getActionsCacheList({
@@ -78,17 +89,17 @@ jobs:
               per_page: 100
             });
             
-            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
             let deletedCount = 0;
             let freedSpace = 0;
             
             for (const cache of caches.data.actions_caches) {
               const lastAccessed = new Date(cache.last_accessed_at);
-              const shouldDelete = 
-                // Eliminar caches no accedidos en 7 días
-                lastAccessed < sevenDaysAgo ||
-                // Eliminar caches viejos (más de 30 días)
-                new Date(cache.created_at) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+              
+              // Si es manual, borrar TODO. Si es automático, aplicar reglas
+              const shouldDelete = isManual || 
+                lastAccessed < oneHourAgo ||
+                new Date(cache.created_at) < new Date(Date.now() - 6 * 60 * 60 * 1000);
               
               if (shouldDelete) {
                 console.log(`🗑️  Eliminando cache: ${cache.key} (${(cache.size_in_bytes / 1024 / 1024).toFixed(2)} MB, último acceso: ${cache.last_accessed_at})`);
@@ -104,6 +115,9 @@ jobs:
               }
             }
             
+            if (isManual) {
+              console.log(`🚨 LIMPIEZA MANUAL: Todos los caches eliminados`);
+            }
             console.log(`✅ Caches eliminados: ${deletedCount}`);
             console.log(`💾 Espacio liberado: ${(freedSpace / 1024 / 1024 / 1024).toFixed(2)} GB`);
 

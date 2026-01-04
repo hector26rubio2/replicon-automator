@@ -73,7 +73,14 @@ jobs:
           mkdir -p .github/badges
           curl -s "https://img.shields.io/badge/coverage-${COVERAGE}%25-${COLOR}" > .github/badges/coverage.svg
       
-      # Coverage se genera localmente, no se sube a artifacts para evitar storage
+      # Subir coverage solo para deploy, con retención mínima
+      - name: Upload coverage report
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 3  # Solo 3 días de retención
       
       - name: Comment PR with coverage
         if: github.event_name == 'pull_request'

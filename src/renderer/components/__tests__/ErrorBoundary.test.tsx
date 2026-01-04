@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
 import { ErrorBoundary } from '../ErrorBoundary';
 import React from 'react';
 
@@ -22,7 +23,32 @@ vi.mock('@/i18n', () => ({
 
 global.window.electronAPI = {
   sendLogToMain: vi.fn(),
-};
+  loadCSV: vi.fn(),
+  saveCSV: vi.fn(),
+  saveCredentials: vi.fn(),
+  loadCredentials: vi.fn(),
+  deleteCredentials: vi.fn(),
+  getConfig: vi.fn(),
+  setConfig: vi.fn(),
+  openExternal: vi.fn(),
+  selectFile: vi.fn(),
+  selectSaveFile: vi.fn(),
+  getAppVersion: vi.fn(),
+  onUpdateAvailable: vi.fn(),
+  onUpdateDownloaded: vi.fn(),
+  installUpdate: vi.fn(),
+  checkForUpdates: vi.fn(),
+  startAutomation: vi.fn(),
+  stopAutomation: vi.fn(),
+  onAutomationProgress: vi.fn(),
+  onAutomationComplete: vi.fn(),
+  getExecutionHistory: vi.fn(),
+  clearExecutionHistory: vi.fn(),
+  exportExecutionHistory: vi.fn(),
+  setLanguage: vi.fn(),
+  getSystemInfo: vi.fn(),
+  openLogFile: vi.fn(),
+} as any;
 
 const ThrowError: React.FC<{ shouldThrow?: boolean }> = ({ shouldThrow = false }) => {
   if (shouldThrow) {

@@ -20,13 +20,13 @@ describe('Translations', () => {
 
   describe('Common translations', () => {
     it('should have basic action words', () => {
-      const actions = ['save', 'cancel', 'delete', 'edit', 'add', 'close'];
+      const actions = ['save', 'cancel', 'delete', 'edit', 'add', 'close'] as const;
 
       languages.forEach(lang => {
         actions.forEach(action => {
           expect(translations[lang].common).toHaveProperty(action);
-          expect(typeof translations[lang].common[action]).toBe('string');
-          expect(translations[lang].common[action].length).toBeGreaterThan(0);
+          expect(typeof translations[lang].common[action as keyof typeof translations[typeof lang]['common']]).toBe('string');
+          expect((translations[lang].common[action as keyof typeof translations[typeof lang]['common']] as string).length).toBeGreaterThan(0);
         });
       });
     });

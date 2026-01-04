@@ -12,7 +12,7 @@ describe('useConfig Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.electronAPI.getConfig = vi.fn(async () => null);
-    window.electronAPI.setConfig = vi.fn(async () => ({ success: true }));
+    window.electronAPI.setConfig = vi.fn(async () => true);
   });
 
   describe('initialization', () => {
