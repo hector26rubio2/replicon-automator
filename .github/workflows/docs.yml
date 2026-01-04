@@ -224,25 +224,6 @@ jobs:
           </body>
           </html>
           EOF
-          content = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', content)
-          
-          # Convertir enlaces
-          content = re.sub(r'\[(.+?)\]\((.+?)\)', r'<a href=\"\2\" class=\"text-blue-600 hover:underline\">\1</a>', content)
-          
-          print(content)
-          " >> docs-site/index.html
-          
-          cat >> docs-site/index.html <<'EOF'
-              </main>
-              
-              <footer class="mt-8 text-center text-gray-600">
-                <p>© 2025 Replicon Automator | <a href="https://github.com/hector26rubio2/replicon-automator" class="text-blue-600 hover:underline">GitHub</a></p>
-                <p class="text-sm mt-2">Última actualización: $(date -u +"%Y-%m-%d %H:%M UTC")</p>
-              </footer>
-            </div>
-          </body>
-          </html>
-          EOF
           
           echo "✅ Documentación generada exitosamente"
       
