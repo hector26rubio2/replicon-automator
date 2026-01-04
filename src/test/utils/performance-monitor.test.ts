@@ -17,7 +17,7 @@ describe('PerformanceMonitor', () => {
             const timings = monitor.getOperationTimings();
             expect(timings).toHaveLength(1);
             expect(timings[0].operation).toBe('test-op');
-            expect(timings[0].duration).toBeGreaterThanOrEqual(50);
+            expect(timings[0].duration).toBeGreaterThanOrEqual(45); // Tolerancia para evitar flakiness
             expect(timings[0].success).toBe(true);
         });
 

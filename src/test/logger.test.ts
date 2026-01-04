@@ -93,12 +93,12 @@ describe('Logger', () => {
 
     it('should only log errors when min level is error', () => {
       Logger.setMinLevel('error');
-      
+
       logger.debug('Debug');
       logger.info('Info');
       logger.warn('Warning');
       logger.error('Error');
-      
+
       const logs = Logger.getLogs();
 
       expect(logs).toHaveLength(1);
@@ -118,7 +118,7 @@ describe('Logger', () => {
 
     it('should limit stored logs to maxLogs', () => {
       Logger.clearLogs();
-      
+
       // Create more than maxLogs (1000) entries
       for (let i = 0; i < 1010; i++) {
         logger.info(`Message ${i}`);
@@ -130,14 +130,14 @@ describe('Logger', () => {
 
     it('should keep most recent logs when limit exceeded', () => {
       Logger.clearLogs();
-      
+
       for (let i = 0; i < 1010; i++) {
         logger.info(`Message ${i}`);
       }
 
       const logs = Logger.getLogs();
       const lastLog = logs[logs.length - 1];
-      
+
       expect(lastLog.message).toBe('Message 1009');
     });
   });
@@ -162,9 +162,9 @@ describe('Logger', () => {
     it('should clear all logs', () => {
       logger.info('Message 1');
       logger.info('Message 2');
-      
+
       Logger.clearLogs();
-      
+
       const logs = Logger.getLogs();
       expect(logs).toHaveLength(0);
     });
@@ -179,7 +179,7 @@ describe('Logger', () => {
       logger2.info('From context 2');
 
       const logs = Logger.getLogs();
-      
+
       expect(logs).toHaveLength(2);
       expect(logs[0].context).toBe('Context1');
       expect(logs[1].context).toBe('Context2');
@@ -189,13 +189,13 @@ describe('Logger', () => {
   describe('setMinLevel', () => {
     it('should change minimum log level', () => {
       Logger.setMinLevel('warn');
-      
+
       logger.debug('Debug');
       logger.info('Info');
       logger.warn('Warn');
 
       const logs = Logger.getLogs();
-      
+
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('warn');
     });
@@ -211,7 +211,7 @@ describe('Logger', () => {
       logger1.error('Error from logger1');
 
       const logs = Logger.getLogs();
-      
+
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe('error');
     });

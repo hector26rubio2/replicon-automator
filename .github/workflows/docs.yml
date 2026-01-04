@@ -1,13 +1,14 @@
 name: Deploy Documentation to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'README.md'
-      - 'docs/**'
-      - '.github/workflows/docs.yml'
+  # Deshabilitado temporalmente hasta que GitHub Pages esté configurado
   workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'README.md'
+  #     - 'docs/**'
+  #     - '.github/workflows/docs.yml'
 
 # Permisos mínimos necesarios
 permissions:

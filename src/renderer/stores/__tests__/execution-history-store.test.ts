@@ -16,7 +16,7 @@ describe('Execution History Store', () => {
   describe('addExecution', () => {
     it('should add execution record with generated ID', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
-      
+
       addExecution({
         status: 'success',
         duration: 1000,
@@ -35,7 +35,7 @@ describe('Execution History Store', () => {
     it('should add execution with timestamp', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
       const before = Date.now();
-      
+
       addExecution({
         status: 'success',
         duration: 500,
@@ -52,7 +52,7 @@ describe('Execution History Store', () => {
 
     it('should add execution with all provided fields', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
-      
+
       addExecution({
         status: 'partial',
         duration: 2000,
@@ -77,7 +77,7 @@ describe('Execution History Store', () => {
 
     it('should add new executions at the beginning', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
-      
+
       addExecution({
         status: 'success',
         duration: 100,
@@ -103,7 +103,7 @@ describe('Execution History Store', () => {
 
     it('should limit history to 100 records', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
-      
+
       // Add 105 records
       for (let i = 0; i < 105; i++) {
         addExecution({
@@ -124,7 +124,7 @@ describe('Execution History Store', () => {
 
     it('should handle different status types', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'error', duration: 50, rowsProcessed: 0, rowsTotal: 5, month: 'Feb', year: 2024 });
       addExecution({ status: 'partial', duration: 150, rowsProcessed: 3, rowsTotal: 5, month: 'Mar', year: 2024 });
@@ -141,7 +141,7 @@ describe('Execution History Store', () => {
   describe('clearHistory', () => {
     it('should clear all execution records', () => {
       const { addExecution, clearHistory } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'success', duration: 200, rowsProcessed: 3, rowsTotal: 3, month: 'Feb', year: 2024 });
 
@@ -153,7 +153,7 @@ describe('Execution History Store', () => {
 
     it('should allow adding new records after clear', () => {
       const { addExecution, clearHistory } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       clearHistory();
       addExecution({ status: 'success', duration: 200, rowsProcessed: 3, rowsTotal: 3, month: 'Feb', year: 2024 });
@@ -167,7 +167,7 @@ describe('Execution History Store', () => {
   describe('getStats', () => {
     it('should return zero stats for empty history', () => {
       const { getStats } = useExecutionHistoryStore.getState();
-      
+
       const stats = getStats();
 
       expect(stats.totalExecutions).toBe(0);
@@ -180,7 +180,7 @@ describe('Execution History Store', () => {
 
     it('should calculate total executions', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'error', duration: 50, rowsProcessed: 0, rowsTotal: 5, month: 'Feb', year: 2024 });
 
@@ -190,7 +190,7 @@ describe('Execution History Store', () => {
 
     it('should calculate success rate', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Feb', year: 2024 });
       addExecution({ status: 'error', duration: 50, rowsProcessed: 0, rowsTotal: 5, month: 'Mar', year: 2024 });
@@ -202,7 +202,7 @@ describe('Execution History Store', () => {
 
     it('should calculate 100% success rate when all successful', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Feb', year: 2024 });
 
@@ -212,7 +212,7 @@ describe('Execution History Store', () => {
 
     it('should calculate 0% success rate when all failed', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'error', duration: 50, rowsProcessed: 0, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'cancelled', duration: 25, rowsProcessed: 1, rowsTotal: 5, month: 'Feb', year: 2024 });
 
@@ -222,7 +222,7 @@ describe('Execution History Store', () => {
 
     it('should calculate average duration', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'success', duration: 200, rowsProcessed: 5, rowsTotal: 5, month: 'Feb', year: 2024 });
       addExecution({ status: 'success', duration: 300, rowsProcessed: 5, rowsTotal: 5, month: 'Mar', year: 2024 });
@@ -233,7 +233,7 @@ describe('Execution History Store', () => {
 
     it('should calculate total rows processed', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'partial', duration: 100, rowsProcessed: 3, rowsTotal: 5, month: 'Feb', year: 2024 });
       addExecution({ status: 'success', duration: 100, rowsProcessed: 7, rowsTotal: 7, month: 'Mar', year: 2024 });
@@ -244,7 +244,7 @@ describe('Execution History Store', () => {
 
     it('should identify last execution', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'error', duration: 50, rowsProcessed: 0, rowsTotal: 5, month: 'Feb', year: 2024 });
 
@@ -259,7 +259,7 @@ describe('Execution History Store', () => {
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
-      
+
       // Add some executions with current month/year timestamp
       const currentMonthTimestamp = now.getTime();
       useExecutionHistoryStore.setState({
@@ -306,7 +306,7 @@ describe('Execution History Store', () => {
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
-      
+
       useExecutionHistoryStore.setState({
         history: [
           {
@@ -340,7 +340,7 @@ describe('Execution History Store', () => {
   describe('Edge Cases', () => {
     it('should handle execution with zero duration', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 0, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
 
       const stats = getStats();
@@ -349,7 +349,7 @@ describe('Execution History Store', () => {
 
     it('should handle execution with zero rows', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'error', duration: 100, rowsProcessed: 0, rowsTotal: 0, month: 'Jan', year: 2024 });
 
       const stats = getStats();
@@ -358,7 +358,7 @@ describe('Execution History Store', () => {
 
     it('should handle mixed durations for average', () => {
       const { addExecution, getStats } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 0, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'success', duration: 1000, rowsProcessed: 5, rowsTotal: 5, month: 'Feb', year: 2024 });
       addExecution({ status: 'success', duration: 500, rowsProcessed: 5, rowsTotal: 5, month: 'Mar', year: 2024 });
@@ -369,7 +369,7 @@ describe('Execution History Store', () => {
 
     it('should generate unique IDs for each execution', () => {
       const { addExecution } = useExecutionHistoryStore.getState();
-      
+
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
       addExecution({ status: 'success', duration: 100, rowsProcessed: 5, rowsTotal: 5, month: 'Jan', year: 2024 });
 

@@ -68,14 +68,14 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should warn when ending non-started operation', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
       monitor.endOperation('never-started', true);
-      
+
       expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('never-started'));
       const timings = monitor.getOperationTimings();
       expect(timings).toHaveLength(0);
-      
+
       consoleWarnSpy.mockRestore();
     });
 
@@ -96,7 +96,7 @@ describe('PerformanceMonitor', () => {
   describe('Metrics Capture', () => {
     it('should capture current metrics', () => {
       const metrics = monitor.captureMetrics();
-      
+
       expect(metrics).toHaveProperty('timestamp');
       expect(metrics.timestamp).toBeInstanceOf(Date);
       expect(metrics).toHaveProperty('memoryUsage');
@@ -111,7 +111,7 @@ describe('PerformanceMonitor', () => {
     it('should capture custom metrics', () => {
       const custom = { requestCount: 42, cacheHitRate: 85.5 };
       const metrics = monitor.captureMetrics(custom);
-      
+
       expect(metrics.custom).toEqual(custom);
     });
 
@@ -135,7 +135,7 @@ describe('PerformanceMonitor', () => {
 
     it('should remove oldest entries when exceeding max size', () => {
       monitor.captureMetrics({ id: 1 });
-      
+
       for (let i = 2; i <= 101; i++) {
         monitor.captureMetrics({ id: i });
       }
@@ -148,7 +148,7 @@ describe('PerformanceMonitor', () => {
 
     it('should convert memory to MB with 2 decimals', () => {
       const metrics = monitor.captureMetrics();
-      
+
       // Verificar que son números redondeados
       expect(metrics.memoryUsage.rss).toBeGreaterThan(0);
       expect(metrics.memoryUsage.heapUsed).toBeGreaterThan(0);
@@ -157,7 +157,7 @@ describe('PerformanceMonitor', () => {
 
     it('should round uptime to 2 decimals', () => {
       const metrics = monitor.captureMetrics();
-      
+
       expect(Number.isFinite(metrics.uptime)).toBe(true);
       expect(metrics.uptime).toBeGreaterThanOrEqual(0);
     });
@@ -166,7 +166,7 @@ describe('PerformanceMonitor', () => {
   describe('getMetrics', () => {
     it('should return current metrics snapshot', () => {
       const metrics = monitor.getMetrics();
-      
+
       expect(metrics).toHaveProperty('timestamp');
       expect(metrics).toHaveProperty('memoryUsage');
       expect(metrics).toHaveProperty('uptime');
@@ -175,7 +175,7 @@ describe('PerformanceMonitor', () => {
     it('should add to history when called', () => {
       monitor.getMetrics();
       monitor.getMetrics();
-      
+
       const history = monitor.getMetricsHistory();
       expect(history).toHaveLength(2);
     });
@@ -186,7 +186,7 @@ describe('PerformanceMonitor', () => {
       monitor.captureMetrics();
       const history1 = monitor.getMetricsHistory();
       const history2 = monitor.getMetricsHistory();
-      
+
       expect(history1).not.toBe(history2); // Different instances
       expect(history1).toEqual(history2); // Same content
     });
@@ -196,10 +196,10 @@ describe('PerformanceMonitor', () => {
     it('should return copy of operations array', () => {
       monitor.startOperation('op1');
       monitor.endOperation('op1', true);
-      
+
       const timings1 = monitor.getOperationTimings();
       const timings2 = monitor.getOperationTimings();
-      
+
       expect(timings1).not.toBe(timings2); // Different instances
       expect(timings1).toEqual(timings2); // Same content
     });
@@ -307,15 +307,15 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should clear pending timings', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
       monitor.startOperation('pending');
       monitor.clear();
       monitor.endOperation('pending', true);
 
       expect(consoleWarnSpy).toHaveBeenCalled();
       expect(monitor.getOperationTimings()).toHaveLength(0);
-      
+
       consoleWarnSpy.mockRestore();
     });
   });
@@ -323,7 +323,7 @@ describe('PerformanceMonitor', () => {
   describe('generateReport', () => {
     it('should generate report with current metrics', () => {
       const report = monitor.generateReport();
-      
+
       expect(report).toContain('Performance Report');
       expect(report).toContain('Timestamp:');
       expect(report).toContain('Uptime:');
@@ -339,7 +339,7 @@ describe('PerformanceMonitor', () => {
       monitor.endOperation('op2', false);
 
       const report = monitor.generateReport();
-      
+
       expect(report).toContain('Operations');
       expect(report).toContain('Total: 2');
       expect(report).toContain('Success: 1');
@@ -356,7 +356,7 @@ describe('PerformanceMonitor', () => {
       monitor.endOperation('csv-load', true);
 
       const report = monitor.generateReport();
-      
+
       expect(report).toContain('Operation Details');
       expect(report).toContain('csv-load:');
       expect(report).toContain('2 ops');
@@ -366,7 +366,7 @@ describe('PerformanceMonitor', () => {
 
     it('should handle empty operations', () => {
       const report = monitor.generateReport();
-      
+
       expect(report).toContain('Total: 0');
       expect(report).toContain('Success: 0');
       expect(report).toContain('Failed: 0');
@@ -375,7 +375,7 @@ describe('PerformanceMonitor', () => {
     it('should format report with line breaks', () => {
       const report = monitor.generateReport();
       const lines = report.split('\n');
-      
+
       expect(lines.length).toBeGreaterThan(5);
       expect(lines[0]).toBe('=== Performance Report ===');
     });
@@ -383,15 +383,15 @@ describe('PerformanceMonitor', () => {
     it('should handle multiple operation types', () => {
       monitor.startOperation('csv-load');
       monitor.endOperation('csv-load', true);
-      
+
       monitor.startOperation('automation');
       monitor.endOperation('automation', false);
-      
+
       monitor.startOperation('export');
       monitor.endOperation('export', true);
 
       const report = monitor.generateReport();
-      
+
       expect(report).toContain('csv-load:');
       expect(report).toContain('automation:');
       expect(report).toContain('export:');
