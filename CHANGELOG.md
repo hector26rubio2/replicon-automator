@@ -6,6 +6,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.3] - 2026-01-09
+
+### Added
+
+**Playwright Runtime Validation & Build Improvements**
+
+- New runtime check service (`playwright-runtime-check.service.ts`) that validates Playwright availability at app startup
+- Added `ensure-playwright.js` script for reliable Playwright installation and binary download
+- New `diagnose:playwright` command for troubleshooting Playwright issues
+- Comprehensive Playwright Build Guide (docs/PLAYWRIGHT_BUILD_GUIDE.md) for developers
+- Runtime detection of missing Playwright with helpful error messages in logs
+
+### Changed
+
+- Updated build workflow: `npm run build` now includes `ensure-playwright` and `copy:playwright` steps
+- Modified `postinstall` hook to use `ensure-playwright` for better reliability
+- Improved `package.json` scripts organization with separate concerns
+- Enhanced `prepare-playwright-build.js` for more robust browser detection
+
+### Fixed
+
+- **CRITICAL**: Playwright binaries now guaranteed to be included in installers and updates
+- Fixed issue where updating to a new version would lose Playwright binaries
+- Resolved "Playwright not found" errors in fresh installations
+- Improved error handling in build scripts with better logging
+- Ensured both dev and production paths work correctly for Playwright detection
+
+### Technical Details
+
+- App now validates Playwright at runtime (not just at build time)
+- Better path resolution for both development and production environments
+- Supports recovery mechanism if Playwright is missing after updates
+- Diagnostic tools for developers to verify correct setup
+- Backward compatible with existing installations
+
+### Migration Guide
+
+**For Users:**
+- No action required on update
+- If you experience issues, simply reinstall from the new `.exe`
+- Alternatively: `npx playwright install chromium --with-deps`
+
+**For Developers:**
+1. After `npm install`, Playwright is automatically available
+2. Run `npm run diagnose:playwright` to verify setup
+3. Build with `npm run dist:win` (includes all validations)
+
 ## [3.6.2] - 2026-01-03
 
 ### Fixed

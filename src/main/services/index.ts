@@ -5,3 +5,4 @@ export * from './credentials.service';
 export { TrayService, trayService } from './tray.service';
 export { notificationService } from './notification.service';
 export { updaterService } from './updater.service';
+export { playwrightRuntimeCheckService } from './playwright-runtime-check.service';

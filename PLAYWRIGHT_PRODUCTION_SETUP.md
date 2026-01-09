@@ -2,102 +2,135 @@
 
 ## Problema Resuelto
 
-Este documento describe los cambios implementados para evitar el error `browserType.launch: Executable doesn't exist` en producción.
+Este documento describe los cambios implementados para evitar el error `browserType.launch: Executable doesn't exist` en producción y en instalación en PCs nuevas.
 
 ## ❌ Problema Original
 
 - Playwright funciona en desarrollo pero falla en producción
 - El instalador no incluye los binarios de Chromium
+- Cuando se actualiza la app, Playwright se pierde
 - La aplicación depende de `npx playwright install` en la máquina del usuario
 - Error: `browserType.launch: Executable doesn't exist at ...`
+- En la pipeline CI/CD, los binarios de Linux no sirven para Windows
 
-## ✅ Solución Implementada
+## ✅ Solución Implementada (Enero 2026)
 
-### 1. **package.json - Scripts**
+### 1. **Scripts de Preparación para Build**
 
-Se agregaron scripts para garantizar que Chromium se instale antes de compilar:
+Se crearon dos scripts que garantizan que Playwright esté listo antes de compilar:
+
+#### `scripts/prepare-playwright-build.js` (Nuevo)
+
+- Verifica que Playwright esté en `node_modules`
+- Si falta Chromium, lo descarga automáticamente
+- Configura `asarUnpack` en `package.json` si es necesario
+- Muestra información detallada de los navegadores disponibles
+
+#### `scripts/ensure-playwright.js` (Mejorado)
+
+- Script rápido para verificar que Playwright está disponible
+- Se ejecuta como parte del proceso de build
+
+### 2. **package.json - Scripts Actualizados**
 
 ```json
 "scripts": {
+  "prebuild": "npm run prepare-playwright",
+  "build": "npm run prebuild && npm run build:renderer && npm run build:main",
+  "prepare-playwright": "node scripts/prepare-playwright-build.js",
+  "ensure-playwright": "node scripts/ensure-playwright.js",
   "postinstall": "npx playwright install chromium --with-deps",
-  "prebuild": "npx playwright install chromium --with-deps",
-  "dist": "npm run prebuild && npm run build && electron-builder",
-  "dist:win": "npm run prebuild && npm run build && electron-builder --win"
+  "dist": "npm run clean && npm run build && electron-builder",
+  "dist:win": "npm run clean && npm run build && electron-builder --win"
 }
 ```
 
 **¿Qué hace?**
 
+- `prepare-playwright`: Ejecuta verificaciones completas antes de build
+- `prebuild`: Corre `prepare-playwright` automáticamente
+- `build`: Corre `prebuild` antes de compilar TypeScript
 - `postinstall`: Instala Chromium después de `npm install`
-- `prebuild`: Garantiza que Chromium esté disponible antes de compilar
-- `dist`/`dist:win`: Asegura que prebuild se ejecute antes del build
 
-### 2. **package.json - electron-builder**
+### 3. **package.json - electron-builder**
 
-Se configuró `extraResources` para empaquetar los binarios de Chromium:
+La configuración `asarUnpack` empaqueta node_modules/playwright sin comprimir:
 
 ```json
-"extraResources": [
-  {
-    "from": "node_modules/playwright-core/.local-browsers",
-    "to": "playwright",
-    "filter": ["**/*"]
-  }
-]
-```
-
-**¿Qué hace?**
-
-- Copia los binarios de Chromium desde `node_modules/playwright-core/.local-browsers`
-- Los coloca en `resources/playwright` del instalador
-- En runtime, la app busca el ejecutable en `process.resourcesPath/playwright`
-
-### 3. **playwright-config.ts** (NUEVO)
-
-Helper para obtener la ruta correcta de Chromium según el entorno:
-
-```typescript
-export function getChromiumExecutablePath(): string | undefined {
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-
-  if (isDev) {
-    return undefined; // Usa ruta por defecto de node_modules
-  }
-
-  // En producción: busca en process.resourcesPath/playwright
-  const resourcesPath = process.resourcesPath;
-  const playwrightPath = path.join(resourcesPath, 'playwright');
-
-  // Busca chromium-*/chrome-win/chrome.exe
-  const chromiumFolder = fs.readdirSync(playwrightPath).find((f) => f.startsWith('chromium-'));
-
-  if (chromiumFolder) {
-    const chromePath = path.join(playwrightPath, chromiumFolder, 'chrome-win', 'chrome.exe');
-
-    if (fs.existsSync(chromePath)) {
-      return chromePath;
-    }
-  }
-
-  throw new Error('No se encontró Chromium en producción');
-}
-
-export function getChromiumLaunchOptions(options = {}) {
-  const executablePath = getChromiumExecutablePath();
-
-  return {
-    headless: options.headless ?? true,
-    slowMo: options.slowMo ?? 50,
-    args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-setuid-sandbox'],
-    ...(executablePath && { executablePath }),
-  };
+"build": {
+  "asarUnpack": [
+    "node_modules/playwright/**/*"
+  ]
 }
 ```
 
 **¿Qué hace?**
 
-- **Desarrollo**: Retorna `undefined`, Playwright usa instalación local
-- **Producción**: Retorna ruta a `chrome.exe` empaquetado
+- Los binarios de Chromium se incluyen sin comprimir en el instalador
+- Se almacenan en `resources/app.asar.unpacked/node_modules/playwright`
+- Electron puede acceder a ellos directamente sin extraer
+
+### 4. **GitHub Actions CI/CD Pipeline**
+
+Se actualizó `.github/workflows/ci-cd.yml` para:
+
+1. Instalar dependencias normales
+2. Ejecutar `npm run prepare-playwright` para verificar/descargar Chromium
+3. Compilar la app con TypeScript
+4. Verificar que Playwright siga en `node_modules`
+5. Ejecutar `electron-builder` para empaquetar (que incluye los binarios)
+
+**Flujo en la pipeline:**
+
+```
+npm ci (instala)
+  ↓
+npm run prepare-playwright (verifica/descarga Playwright)
+  ↓
+npm install chromium para tests (Linux, solo pruebas)
+  ↓
+npm run validate (tests)
+  ↓
+npm run build (ejecuta prebuild → prepare-playwright → build:renderer + build:main)
+  ↓
+Verifica que Playwright esté en node_modules
+  ↓
+electron-builder (empaqueta con asarUnpack)
+  ↓
+Verifica que Playwright está en app.asar.unpacked
+```
+
+## 🔍 Cómo Funciona en Producción
+
+### En Primera Ejecución Después de Instalar
+
+```javascript
+// main/services/browser.ts
+const browser = await chromium.launch({
+  executablePath: path.join(
+    app.getAppPath(),
+    'node_modules/playwright/.local-browsers/chromium-xxx/chrome.exe'
+  ),
+  headless: true,
+});
+```
+
+Playwright encuentra el ejecutable en:
+
+```
+C:\Program Files\Replicon Automator\resources\app.asar.unpacked\node_modules\playwright\chromium-1200\chrome-win64\chrome.exe
+```
+
+### En Actualizaciones
+
+1. El instalador incluye los binarios de Chromium más recientes
+2. Al actualizar, los binarios se reemplazan automáticamente
+3. No es necesario hacer nada en la máquina del usuario
+
+## 📝 Verificación
+
+Para verificar que todo funciona correctamente:
+
 - Incluye args de seguridad para Chromium
 - Maneja errores si no encuentra el ejecutable
 

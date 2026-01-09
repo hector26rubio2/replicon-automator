@@ -7,6 +7,7 @@ import { PlaywrightAutomation } from './services';
 import { setupIPCHandlers } from './controllers';
 import { closeBrowser } from './services/automation-enhanced.service';
 import { updaterService } from './services/updater.service';
+import { playwrightRuntimeCheckService } from './services/playwright-runtime-check.service';
 import { DEFAULT_MAPPINGS, DEFAULT_HORARIOS } from '../common/constants';
 import { setupDevLogger, setMainWindowForLogs } from './utils/dev-logger';
 import { productionLogger } from './utils/production-logger';
@@ -145,6 +146,8 @@ app.whenReady().then(() => {
   if (mainWindow) {
     updaterService.initialize(mainWindow);
   }
+  // Verificar que Playwright está disponible (especialmente importante después de actualizar)
+  playwrightRuntimeCheckService.initialize();
   setupIPCHandlers({
     store,
     getMainWindow,

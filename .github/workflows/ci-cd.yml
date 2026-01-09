@@ -107,29 +107,12 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
       
-      - name: Install Playwright browsers
+      - name: Prepare Playwright for build
+        run: npm run prepare-playwright
+      
+      - name: Install Playwright browsers (Linux - for testing only)
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
-      
-      # CRÍTICO: Copiar binarios de Playwright a node_modules para asarUnpack
-      - name: Copy Playwright binaries to node_modules
-        run: |
-          echo "📦 Copiando binarios de Playwright a node_modules..."
-          mkdir -p node_modules/playwright/.local-browsers
-          
-          # Copiar desde cache de Playwright
-          if [ -d "$HOME/.cache/ms-playwright" ]; then
-            cp -r $HOME/.cache/ms-playwright/chromium-* node_modules/playwright/.local-browsers/ 2>/dev/null || true
-          fi
-          
-          # Verificar
-          if [ -d "node_modules/playwright/.local-browsers/chromium-"* ]; then
-            echo "✅ Binarios copiados correctamente"
-            ls -lah node_modules/playwright/.local-browsers/
-          else
-            echo "❌ ERROR: No se pudieron copiar los binarios"
-            exit 1
-          fi
       
       - name: Run quality checks
         run: npm run validate
@@ -138,6 +121,17 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+      
+      - name: Verify Playwright before packaging
+        run: |
+          echo "✅ Verificando que Playwright esté en node_modules..."
+          if [ -d "node_modules/playwright" ]; then
+            echo "✅ Playwright encontrado"
+            ls -la node_modules/playwright/ | head -20
+          else
+            echo "❌ ERROR: Playwright no está en node_modules"
+            exit 1
+          fi
       
       - name: Package application (Windows)
         run: npx electron-builder --win --x64 --publish never
