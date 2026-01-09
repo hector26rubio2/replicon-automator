@@ -44,11 +44,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Migration Guide
 
 **For Users:**
+
 - No action required on update
 - If you experience issues, simply reinstall from the new `.exe`
 - Alternatively: `npx playwright install chromium --with-deps`
 
 **For Developers:**
+
 1. After `npm install`, Playwright is automatically available
 2. Run `npm run diagnose:playwright` to verify setup
 3. Build with `npm run dist:win` (includes all validations)

@@ -41,7 +41,6 @@ function checkPlaywrightInstallation() {
 }
 
 function detectPlatformBrowsers() {
-  const platform = process.platform;
   const browsers = {};
 
   const contents = fs.readdirSync(playwrightDir);
