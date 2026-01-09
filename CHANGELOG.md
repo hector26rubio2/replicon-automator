@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.4] - 2026-01-09
+
+### Fixed
+
+- **CRITICAL**: Fixed `ensure-playwright.js` script that was failing in CI/CD environments
+- Script now correctly detects Playwright binaries in global cache (`~/.cache/ms-playwright` on Linux, `%LOCALAPPDATA%\ms-playwright` on Windows)
+- Removed overly strict verification that expected binaries only in `node_modules/playwright/`
+- CI/CD pipelines can now complete successfully with proper Playwright binary detection
+- Support for both development and CI/CD environments (npm cache vs system cache)
+
 ## [3.6.3] - 2026-01-09
 
 ### Added
