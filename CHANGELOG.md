@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.5] - 2026-01-09
+
+### Fixed
+
+- Fixed `prepare-playwright-build.js` script to find Playwright binaries in global cache (`~/.cache/ms-playwright` on Linux)
+- Script now works correctly in GitHub Actions (ubuntu-latest) environment
+- Improved binary detection to check both node_modules and system cache
+
 ## [3.6.4] - 2026-01-09
 
 ### Fixed
