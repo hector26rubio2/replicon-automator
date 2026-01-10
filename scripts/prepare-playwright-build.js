@@ -32,6 +32,24 @@ function checkPlaywrightInstallation() {
   const hasChromium = fs.readdirSync(playwrightDir).some((f) => f.startsWith('chromium-'));
 
   if (!hasChromium) {
+    // Verificar en cache global
+    const homeDir = os.homedir();
+    let cacheDir;
+
+    if (process.platform === 'win32') {
+      cacheDir = path.join(homeDir, 'AppData', 'Local', 'ms-playwright');
+    } else {
+      cacheDir = path.join(homeDir, '.cache', 'ms-playwright');
+    }
+
+    if (fs.existsSync(cacheDir)) {
+      const contents = fs.readdirSync(cacheDir);
+      if (contents.some((dir) => dir.startsWith('chromium-'))) {
+        log('Chromium encontrado en cache global', 'success');
+        return true;
+      }
+    }
+
     log('Chromium no encontrado en Playwright', 'warning');
     return false;
   }
@@ -40,18 +58,76 @@ function checkPlaywrightInstallation() {
   return true;
 }
 
+function findChromiumBinaries() {
+  // Buscar en node_modules/playwright
+  if (fs.existsSync(playwrightDir)) {
+    const contents = fs.readdirSync(playwrightDir);
+    if (contents.some((dir) => dir.startsWith('chromium-'))) {
+      return true;
+    }
+  }
+
+  // Buscar en cache global
+  const homeDir = os.homedir();
+  let cacheDir;
+
+  if (process.platform === 'win32') {
+    cacheDir = path.join(homeDir, 'AppData', 'Local', 'ms-playwright');
+  } else {
+    cacheDir = path.join(homeDir, '.cache', 'ms-playwright');
+  }
+
+  if (fs.existsSync(cacheDir)) {
+    const contents = fs.readdirSync(cacheDir);
+    if (contents.some((dir) => dir.startsWith('chromium-'))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function detectPlatformBrowsers() {
   const browsers = {};
 
-  const contents = fs.readdirSync(playwrightDir);
+  // Intentar leer desde node_modules primero
+  if (fs.existsSync(playwrightDir)) {
+    const contents = fs.readdirSync(playwrightDir);
 
-  for (const file of contents) {
-    if (file.startsWith('chromium-')) {
-      browsers.chromium = file;
-    } else if (file.startsWith('firefox-')) {
-      browsers.firefox = file;
-    } else if (file.startsWith('webkit-')) {
-      browsers.webkit = file;
+    for (const file of contents) {
+      if (file.startsWith('chromium-')) {
+        browsers.chromium = file;
+      } else if (file.startsWith('firefox-')) {
+        browsers.firefox = file;
+      } else if (file.startsWith('webkit-')) {
+        browsers.webkit = file;
+      }
+    }
+  }
+
+  // Si no encontramos en node_modules, buscar en cache global
+  if (!browsers.chromium) {
+    const homeDir = os.homedir();
+    let cacheDir;
+
+    if (process.platform === 'win32') {
+      cacheDir = path.join(homeDir, 'AppData', 'Local', 'ms-playwright');
+    } else {
+      cacheDir = path.join(homeDir, '.cache', 'ms-playwright');
+    }
+
+    if (fs.existsSync(cacheDir)) {
+      const contents = fs.readdirSync(cacheDir);
+      for (const file of contents) {
+        if (file.startsWith('chromium-')) {
+          browsers.chromium = file;
+          log(`Chromium encontrado en cache global: ${cacheDir}`, 'success');
+        } else if (file.startsWith('firefox-')) {
+          browsers.firefox = file;
+        } else if (file.startsWith('webkit-')) {
+          browsers.webkit = file;
+        }
+      }
     }
   }
 
@@ -61,30 +137,33 @@ function detectPlatformBrowsers() {
 function ensureChromium() {
   log('Verificando binarios de Chromium...', 'info');
 
-  const browsers = detectPlatformBrowsers();
-
-  if (!browsers.chromium) {
-    log('Chromium no está instalado, descargando...', 'warning');
-
-    const result = spawnSync('npx', ['playwright', 'install', 'chromium'], {
-      cwd: projectRoot,
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-    });
-
-    if (result.status !== 0) {
-      log('Error instalando Chromium', 'error');
-      process.exit(1);
-    }
+  // Primero verificar si ya existen en cualquier lado
+  if (findChromiumBinaries()) {
+    log('Chromium está disponible', 'success');
+    return;
   }
 
-  const updatedBrowsers = detectPlatformBrowsers();
-  if (!updatedBrowsers.chromium) {
-    log('Chromium aún no está disponible después de instalar', 'error');
+  // Si no existen, descargar
+  log('Chromium no está instalado, descargando...', 'warning');
+
+  const result = spawnSync('npx', ['playwright', 'install', 'chromium', '--with-deps'], {
+    cwd: projectRoot,
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  });
+
+  if (result.status !== 0) {
+    log('Error instalando Chromium', 'error');
     process.exit(1);
   }
 
-  log('Chromium está disponible', 'success');
+  // Verificar nuevamente
+  if (findChromiumBinaries()) {
+    log('Chromium está disponible', 'success');
+  } else {
+    log('Chromium aún no está disponible después de instalar', 'error');
+    process.exit(1);
+  }
 }
 
 function verifyElectronBuilder() {
