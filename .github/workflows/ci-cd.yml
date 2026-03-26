@@ -61,117 +61,35 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       
-      # Cache node_modules para ahorrar ~2 minutos
-      - name: Cache node modules
-        uses: actions/cache@v4
-        id: cache-node-modules
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-v1-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-v1-
-      
-      # Cache Playwright browsers para ahorrar ~1 minuto (500MB aprox)
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: cache-playwright
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-v1-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-v1-
-      
-      # Cache Wine para ahorrar ~1-2 minutos en instalación
-      - name: Cache Wine installation
-        uses: actions/cache@v4
-        id: cache-wine
-        with:
-          path: |
-            /opt/wine-stable
-            ~/.wine
-          key: ${{ runner.os }}-wine-v1-9.0
-          restore-keys: |
-            ${{ runner.os }}-wine-v1-
-      
-      - name: Install Wine and dependencies
-        if: steps.cache-wine.outputs.cache-hit != 'true'
+      - name: Install Wine (for Windows packaging on Linux)
         run: |
           sudo dpkg --add-architecture i386
           sudo mkdir -pm755 /etc/apt/keyrings
           sudo wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
-          sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+          CODENAME=$(lsb_release -cs)
+          sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/${CODENAME}/winehq-${CODENAME}.sources
           sudo apt-get update
           sudo apt-get install -y --install-recommends winehq-stable
       
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
       
       - name: Prepare Playwright for build
         run: npm run prepare-playwright
       
-      - name: Install Playwright browsers (Linux - for testing only)
-        if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install chromium --with-deps
-      
       - name: Run quality checks
         run: npm run validate
       
-      - name: Build application
-        run: npm run build
-        env:
-          NODE_ENV: production
-      
-      - name: Verify Playwright before packaging
-        run: |
-          echo "✅ Verificando que Playwright esté en node_modules..."
-          if [ -d "node_modules/playwright" ]; then
-            echo "✅ Playwright encontrado"
-            ls -la node_modules/playwright/ | head -20
-          else
-            echo "❌ ERROR: Playwright no está en node_modules"
-            exit 1
-          fi
-      
-      - name: Package application (Windows)
-        run: npx electron-builder --win --x64 --publish never
+      - name: Build and package application (Windows)
+        run: npm run dist:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_IDENTITY_AUTO_DISCOVERY: false
+          NODE_ENV: production
       
-      # Verificar que node_modules/playwright quedó desempaquetado
-      - name: Verify packaged Playwright (asarUnpack)
+      - name: List release artifacts
         run: |
-          echo "📦 Verificando recursos empaquetados..."
-          
-          if [ -d "release/win-unpacked/resources" ]; then
-            echo "✅ Carpeta resources encontrada"
-            ls -lah release/win-unpacked/resources/
-            
-            if [ -d "release/win-unpacked/resources/app.asar.unpacked" ]; then
-              echo ""
-              echo "✅ app.asar.unpacked encontrado"
-              
-              if [ -d "release/win-unpacked/resources/app.asar.unpacked/node_modules/playwright" ]; then
-                echo "✅ Playwright desempaquetado correctamente"
-                echo ""
-                echo "📂 Buscando chrome.exe:"
-                find release/win-unpacked/resources/app.asar.unpacked/node_modules/playwright -name "chrome.exe" -type f || echo "⚠️  chrome.exe no encontrado (se descargará al ejecutar)"
-              else
-                echo "❌ ERROR: node_modules/playwright NO encontrado en app.asar.unpacked"
-                ls -lah release/win-unpacked/resources/app.asar.unpacked/node_modules/ || echo "node_modules no existe"
-                exit 1
-              fi
-            else
-              echo "❌ ERROR: app.asar.unpacked NO encontrado en resources"
-              echo "Contenido de resources:"
-              ls -lah release/win-unpacked/resources/
-              exit 1
-            fi
-          else
-            echo "❌ ERROR: Carpeta resources no encontrada"
-            exit 1
-          fi
+          echo "=== Release artifacts ==="
+          ls -lah release/ || echo "release/ not found"
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -179,8 +97,8 @@ jobs:
           name: windows-installer
           path: |
             release/*.exe
-            release/*.blockmap
-            release/*.yml
+            release/latest.yml
+            release/*.exe.blockmap
             release_notes.txt
           retention-days: 1  # Eliminar después de 1 día para $0 storage
 
@@ -225,7 +143,7 @@ jobs:
           prerelease: false
           files: |
             release/*.exe
-            release/*.blockmap
             release/latest.yml
+            release/*.exe.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
