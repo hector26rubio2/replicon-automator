@@ -22,6 +22,13 @@ npm-debug.log*
 # Environment
 .env
 .env.local
+.env.production
+.env.development
+
+# Backend build artifacts
+backend/src/**/bin/
+backend/src/**/obj/
+backend/publish/
 
 # Electron
 .electron/
